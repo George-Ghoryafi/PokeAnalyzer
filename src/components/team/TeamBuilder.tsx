@@ -58,7 +58,13 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
           return (
             <div
               key={`slot-${index}-${pokemon.id}`}
-              onClick={() => onSelectSlot(index)}
+              onClick={() => {
+                if (isSelected) {
+                  onOpenSearch(index);
+                } else {
+                  onSelectSlot(index);
+                }
+              }}
               className={cn(
                 "relative group flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-sm",
                 isSelected && isLegal
@@ -124,10 +130,14 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                key={`mini-${i}`} 
                onClick={(e) => {
                  e.stopPropagation();
-                 onSelectSlot(i);
-                 if (!s.pokemon) {
+                 if (isSelected && s.pokemon) {
+                   onOpenSearch(i);
+                 } else if (!s.pokemon) {
+                   onSelectSlot(i);
                    onToggleExpand?.();
                    onOpenSearch(i);
+                 } else {
+                   onSelectSlot(i);
                  }
                }}
                className={cn(

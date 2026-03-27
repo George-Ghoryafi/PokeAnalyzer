@@ -136,7 +136,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
             </div>
           </div>
 
-          <div className="relative z-10 grid grid-cols-2 gap-3 md:gap-4">
+          <div className="relative z-[70] grid grid-cols-2 gap-3 md:gap-4">
             <div className="rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
                 <Zap className="w-3.5 h-3.5 mr-2 text-yellow-400" /> Ability
@@ -149,6 +149,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                 }}
                 options={pokemon.abilities.map(a => ({ label: a.name, value: a.name }))}
                 placeholder="Select Ability"
+                renderUpwards
               />
             </div>
             <div className="rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg">
@@ -170,6 +171,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                   { label: 'Focus Sash', value: 'focussash' }
                 ]}
                 placeholder="Select Item"
+                renderUpwards
               />
             </div>
           </div>
