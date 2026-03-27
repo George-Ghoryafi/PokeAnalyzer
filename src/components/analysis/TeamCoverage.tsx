@@ -1,4 +1,5 @@
-import { ShieldAlert, Target, Shield, AlertTriangle, Crosshair, XCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { ShieldAlert, Shield, AlertTriangle, Crosshair, XCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { PokedexTooltip } from '../ui/PokedexTooltip';
 import type { TeamSlotState, PokemonType, Move } from '../../data/mocks';
 import { cn } from '../../lib/utils';
 import { TypeBadge } from '../ui/TypeBadge';
@@ -53,21 +54,24 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
       return { pokemon: slot.pokemon!, mult };
     });
 
-    // Who can attack this type for Super Effective damage?
+    // Who can attack this type for Super Effective damage? (Status moves excluded — they deal no damage)
     const attackers = activeSlots.flatMap(slot => {
-       const seMoves = slot.moves.filter(m => m && (typeMatrix[attackType]?.[m.type] ?? 1) > 1) as Move[];
+       const seMoves = slot.moves.filter(m => m && m.category !== 'status' && (typeMatrix[attackType]?.[m.type] ?? 1) > 1) as Move[];
        if (seMoves.length > 0) return [{ pokemon: slot.pokemon!, moves: seMoves }];
        return [];
     });
 
     const maxDamageTaken = Math.max(...defenders.map(d => d.mult), 0);
     const minDamageTaken = Math.min(...defenders.map(d => d.mult), 1);
+    const weakCount = defenders.filter(d => d.mult >= 2).length;
 
     // Contextual Rules
     // Unmitigated Weakness: Somebody takes 2x or 4x, and nobody resists it (< 1).
     const isUnmitigatedWeakness = maxDamageTaken >= 2 && minDamageTaken >= 1;
+    // Stacked Weakness: 3+ members take super-effective damage — critical even if someone resists
+    const isStackedWeakness = weakCount >= 3;
     // Mitigated Weakness: Somebody takes 2x or 4x, but somebody else resists it or is immune 
-    const isMitigatedWeakness = maxDamageTaken >= 2 && minDamageTaken < 1;
+    const isMitigatedWeakness = maxDamageTaken >= 2 && minDamageTaken < 1 && !isStackedWeakness;
     
     // Core Defenses: Immunities or massive 0.25x resistances
     const isWalled = minDamageTaken === 0;
@@ -82,7 +86,9 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
       attackers,
       maxDamageTaken,
       minDamageTaken,
+      weakCount,
       isUnmitigatedWeakness,
+      isStackedWeakness,
       isMitigatedWeakness,
       isWalled,
       isHeavilyResisted,
@@ -91,7 +97,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
   });
 
   // 2. Bucketing Insights
-  const criticalVulnerabilities = analysis.filter(t => t.isUnmitigatedWeakness).sort((a,b) => b.maxDamageTaken - a.maxDamageTaken);
+  const criticalVulnerabilities = analysis.filter(t => t.isUnmitigatedWeakness || t.isStackedWeakness).sort((a,b) => b.weakCount - a.weakCount || b.maxDamageTaken - a.maxDamageTaken);
   
   const coreDefenses = analysis.filter(t => t.isWalled || t.isHeavilyResisted).sort((a,b) => a.minDamageTaken - b.minDamageTaken);
   
@@ -101,31 +107,13 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
   return (
     <div className="flex flex-col space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       
-      {/* HEADER VITALS */}
-      <div className="rounded-[2rem] border border-border/50 bg-card/40 p-6 shadow-[0_10px_40px_rgba(0,0,0,0.1)] backdrop-blur-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <h2 className="text-2xl md:text-3xl font-black text-foreground tracking-tight uppercase flex items-center">
-             <Target className="w-6 h-6 mr-3 text-pd-accent"/> Tactical Overview
-          </h2>
-          <p className="text-muted-foreground mt-2 font-medium max-w-lg">
-             Abstracted insights focusing strictly on extreme advantages and unmitigated vulnerabilities across your current setup.
-          </p>
-        </div>
-        
-        <div className="flex gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-           <div className="px-5 py-3 rounded-2xl bg-background/50 border border-border/50 shadow-inner flex flex-col items-start min-w-[120px]">
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center"><Crosshair className="w-3 h-3 mr-1.5"/> Covered</span>
-              <span className="text-2xl font-black text-foreground">{offensiveCoverage.length} <span className="text-sm opacity-50">/ 18</span></span>
-           </div>
-           <div className="px-5 py-3 rounded-2xl bg-background/50 border border-border/50 shadow-inner flex flex-col items-start min-w-[120px]">
-              <span className="text-[10px] font-black uppercase tracking-widest text-pd-accent flex items-center"><ShieldAlert className="w-3 h-3 mr-1.5"/> Critical</span>
-              <span className="text-2xl font-black text-foreground">{criticalVulnerabilities.length}</span>
-           </div>
-           <div className="px-5 py-3 rounded-2xl bg-background/50 border border-border/50 shadow-inner flex flex-col items-start min-w-[120px]">
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500 flex items-center"><Shield className="w-3 h-3 mr-1.5"/> Walled</span>
-              <span className="text-2xl font-black text-foreground">{coreDefenses.filter(c => c.isWalled).length}</span>
-           </div>
-        </div>
+      <HeuristicInsights team={team} />
+
+      {/* Section Divider */}
+      <div className="flex items-center gap-4 pt-2">
+        <div className="flex-1 h-px bg-border/50" />
+        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Detailed Breakdown</span>
+        <div className="flex-1 h-px bg-border/50" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8">
@@ -139,6 +127,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
                 <h3 className="text-pd-accent font-black uppercase tracking-widest text-sm md:text-base flex items-center">
                   <AlertTriangle className="w-5 h-5 mr-2" /> Critical Vulnerabilities
                 </h3>
+                <PokedexTooltip content="Types that threaten your team with no safe switch-in. Includes unmitigated weaknesses (no member resists) and stacked weaknesses (3+ members hit for super-effective damage)." />
               </div>
               
               <div className="space-y-4 w-full relative z-10">
@@ -164,9 +153,12 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
 
             {/* Defensive Core (Immunities / Hard Resists) */}
             <div className="rounded-[2rem] border border-border bg-card p-6 md:p-8 shadow-sm flex flex-col items-start relative overflow-hidden group">
-              <h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm md:text-base flex items-center mb-6 z-10">
-                <Shield className="w-5 h-5 mr-2" /> Defensive Core
-              </h3>
+              <div className="flex items-center justify-between w-full mb-6 z-10">
+                <h3 className="text-emerald-500 font-black uppercase tracking-widest text-sm md:text-base flex items-center">
+                  <Shield className="w-5 h-5 mr-2" /> Defensive Core
+                </h3>
+                <PokedexTooltip content="Your team's strongest defensive anchors against specific types. Shows members with immunities (0x) or double-resistances (0.25x), critical for safely pivoting against predictable threats." />
+              </div>
               
               <div className="space-y-4 w-full relative z-10">
                  {coreDefenses.length > 0 ? coreDefenses.map(core => (
@@ -201,9 +193,12 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
             {/* Blind Spots */}
             {blindSpots.length > 0 && (
                <div className="rounded-[2rem] border border-border bg-card p-6 md:p-8 shadow-sm relative overflow-hidden">
-                 <h3 className="text-muted-foreground font-black uppercase tracking-widest text-[11px] flex items-center mb-4">
-                   <XCircle className="w-4 h-4 mr-2" /> Offensive Blind Spots
-                 </h3>
+                 <div className="flex items-center justify-between w-full mb-4">
+                   <h3 className="text-muted-foreground font-black uppercase tracking-widest text-[11px] flex items-center">
+                     <XCircle className="w-4 h-4 mr-2" /> Offensive Blind Spots
+                   </h3>
+                   <PokedexTooltip content="Types that none of your equipped damaging moves can hit for super-effective damage. These Pokémon can freely switch in and wall your entire team's offensive pressure." />
+                 </div>
                  <p className="text-xs font-medium text-muted-foreground mb-4">
                    Your current equipped movesets hit neutral or worse against these specific typings:
                  </p>
@@ -215,9 +210,12 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
 
             {/* Offensive Pressure Mapping */}
             <div className="rounded-[2rem] border border-border bg-card p-6 md:p-8 shadow-sm flex flex-col items-start relative overflow-hidden group">
-              <h3 className="text-foreground font-black uppercase tracking-widest text-sm md:text-base flex items-center mb-6 relative z-10 w-full border-b border-border/50 pb-4">
-                <Crosshair className="w-5 h-5 mr-2 text-pd-accent" /> Offensive Checkmates
-              </h3>
+              <div className="flex items-center justify-between w-full mb-6 relative z-10 border-b border-border/50 pb-4">
+                <h3 className="text-foreground font-black uppercase tracking-widest text-sm md:text-base flex items-center">
+                  <Crosshair className="w-5 h-5 mr-2 text-pd-accent" /> Offensive Checkmates
+                </h3>
+                <PokedexTooltip content="Types your team can threaten with super-effective damage. Shows which members carry the coverage and what moves deliver the hit. More coverage options per type means more flexible play." />
+              </div>
               
               <div className="space-y-2 w-full relative z-10">
                  {offensiveCoverage.length > 0 ? offensiveCoverage.map(off => (
@@ -247,7 +245,6 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
          </div>
       </div>
 
-      <HeuristicInsights team={team} />
       <ExpertAnalyst team={team} />
     </div>
   );

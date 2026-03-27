@@ -96,3 +96,25 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border);
 }
+
+/* ========================= */
+/* Pokédex Tooltip Animations */
+/* ========================= */
+
+.pokedex-door-top-open {
+  animation: doorSlideUp 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.pokedex-door-bottom-open {
+  animation: doorSlideDown 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes doorSlideUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+@keyframes doorSlideDown {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}

@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import type { TeamSlotState } from '../../data/mocks';
 import { generateHeuristics } from '../../lib/telemetry';
 import { Shield, Target, Wrench, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { PokedexTooltip } from '../ui/PokedexTooltip';
 import { cn } from '../../lib/utils';
 import { TypeBadge } from '../ui/TypeBadge';
 import { useAllTypeMatchups } from '../../queries/typeQueries';
@@ -38,7 +39,8 @@ export function HeuristicInsights({ team }: HeuristicInsightsProps) {
       <div className="rounded-[2rem] border border-border bg-card overflow-hidden flex flex-col shadow-sm">
         <div className="bg-pd-accent/10 px-6 py-4 border-b border-border flex items-center">
           <Shield className="w-5 h-5 text-pd-accent mr-3" />
-          <h3 className="font-black uppercase tracking-widest text-sm text-foreground">Defensive Profile</h3>
+          <h3 className="font-black uppercase tracking-widest text-sm text-foreground flex-1">Defensive Profile</h3>
+          <PokedexTooltip content="Scans your roster for type-based defensive liabilities. Stacked Weaknesses flag types that hit 3+ members for super-effective damage. Unresisted Threats flag attack types that no team member resists or is immune to." />
         </div>
         <div className="p-6 space-y-6 flex-1">
           <div>
@@ -68,7 +70,8 @@ export function HeuristicInsights({ team }: HeuristicInsightsProps) {
       <div className="rounded-[2rem] border border-border bg-card overflow-hidden flex flex-col shadow-sm">
         <div className="bg-emerald-500/10 px-6 py-4 border-b border-border flex items-center">
           <Target className="w-5 h-5 text-emerald-500 mr-3" />
-          <h3 className="font-black uppercase tracking-widest text-sm text-foreground">Offensive Profile</h3>
+          <h3 className="font-black uppercase tracking-widest text-sm text-foreground flex-1">Offensive Profile</h3>
+          <PokedexTooltip content="Analyzes your team's equipped movesets for offensive coverage gaps. Missing SE Coverage lists types that no equipped damaging move can hit for super-effective damage. Status moves are excluded from this analysis." />
         </div>
         <div className="p-6 space-y-6 flex-1 flex flex-col">
           <div className="flex-1">
@@ -101,7 +104,8 @@ export function HeuristicInsights({ team }: HeuristicInsightsProps) {
       <div className="rounded-[2rem] border border-border bg-card overflow-hidden flex flex-col shadow-sm">
         <div className="bg-yellow-500/10 px-6 py-4 border-b border-border flex items-center">
           <Wrench className="w-5 h-5 text-yellow-500 mr-3" />
-          <h3 className="font-black uppercase tracking-widest text-sm text-foreground">Utility & Hazards</h3>
+          <h3 className="font-black uppercase tracking-widest text-sm text-foreground flex-1">Utility & Hazards</h3>
+          <PokedexTooltip content="Checks for critical competitive utility. Entry Hazards (Stealth Rock, Spikes) are essential for chip damage. Hazard Removal (Defog, Rapid Spin) prevents the opponent from gaining passive value." />
         </div>
         <div className="p-6 space-y-4 flex-1 flex flex-col justify-center">
           
