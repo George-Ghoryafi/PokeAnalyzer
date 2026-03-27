@@ -1,4 +1,4 @@
-import { X, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import type { TeamSlotState } from '../../data/mocks';
 import { cn, isPokemonAllowedInGame } from '../../lib/utils';
 import { PokeballIcon } from '../ui/PokeballIcon';
@@ -65,6 +65,15 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                   onSelectSlot(index);
                 }
               }}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                onRemove(index);
+              }}
+              onDoubleClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRemove(index);
+              }}
               className={cn(
                 "relative group flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-sm",
                 isSelected && isLegal
@@ -76,16 +85,6 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                   : "border-border/80 bg-card hover:border-muted-foreground/50 hover:bg-foreground/5 opacity-80 hover:opacity-100"
               )}
             >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRemove(index);
-                }}
-                className="absolute top-1 right-1 lg:top-1.5 lg:right-1.5 p-1 rounded-full bg-background/90 text-muted-foreground hover:text-pd-accent hover:bg-pd-accent/10 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-sm border border-border/50 backdrop-blur-md"
-              >
-                <X className="w-3 h-3" />
-              </button>
-
               <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent rounded-full blur-xl mix-blend-overlay"></div>
               <img
                 src={pokemon.spriteUrl}
@@ -139,6 +138,15 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                  } else {
                    onSelectSlot(i);
                  }
+               }}
+               onContextMenu={(e) => {
+                 e.preventDefault();
+                 if (s.pokemon) onRemove(i);
+               }}
+               onDoubleClick={(e) => {
+                 e.preventDefault();
+                 e.stopPropagation();
+                 if (s.pokemon) onRemove(i);
                }}
                className={cn(
                  "w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center shadow-inner cursor-pointer hover:scale-110 transition-all overflow-hidden", 

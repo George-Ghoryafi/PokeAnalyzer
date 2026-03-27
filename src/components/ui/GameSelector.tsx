@@ -59,8 +59,8 @@ export function GameSelector({ value, onChange }: GameSelectorProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-72 max-h-[60vh] overflow-y-auto bg-popover border border-border rounded-xl shadow-xl py-2 custom-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
-          <div className="px-4 py-2 text-[10px] font-black tracking-widest text-muted-foreground/60 uppercase border-b border-border/40 mb-1 sticky top-0 bg-popover/90 backdrop-blur-sm z-10">
+        <div className="absolute top-full right-0 mt-2 w-72 max-h-[60vh] overflow-y-auto bg-card border border-border/80 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] py-2 custom-scrollbar animate-in fade-in slide-in-from-top-1 duration-150 z-[100] backdrop-blur-xl">
+          <div className="px-4 py-2 text-[10px] font-black tracking-widest text-muted-foreground/60 uppercase border-b border-border/40 mb-1 sticky top-0 bg-card/95 backdrop-blur-md z-10">
             Theory Crafting
           </div>
           <div className="px-1 mb-2 border-b border-border/40 pb-2">
@@ -95,7 +95,7 @@ export function GameSelector({ value, onChange }: GameSelectorProps) {
             </button>
           </div>
 
-          <div className="px-4 py-2 text-[10px] font-black tracking-widest text-muted-foreground/60 uppercase border-b border-border/40 mb-1 sticky top-[33px] bg-popover/90 backdrop-blur-sm z-10">
+          <div className="px-4 py-2 text-[10px] font-black tracking-widest text-muted-foreground/60 uppercase border-b border-border/40 mb-1 sticky top-[33px] bg-card/95 backdrop-blur-md z-10">
             Select Game Version
           </div>
           <div className="px-1">
