@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react';
 import { Shield, Sword, Zap } from 'lucide-react';
 import type { TeamSlotState, Move } from '../../data/mocks';
 import { StatPanel } from '../analysis/StatPanel';
-import { WeaknessMatrix } from '../analysis/WeaknessMatrix';
 import { MoveSlotCard } from './MoveSlotCard';
 import { PremiumSelect } from '../ui/PremiumSelect';
 import { NumberInput } from '../ui/NumberInput';
+import { TypeBadge } from '../ui/TypeBadge';
 
 export interface EnrichedMove {
   name: string;
@@ -76,17 +76,20 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
             {pokemon.name}
             {slot.shiny && <span className="ml-3 text-sm text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-md border border-yellow-400/20">✨ Shiny</span>}
           </h1>
-          <div className="flex items-center gap-3 mt-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <div className="flex flex-wrap gap-2 mt-2">
+            {pokemon.types.map(t => <TypeBadge key={t} type={t} />)}
+          </div>
+          <div className="flex flex-wrap gap-3 mt-3 text-xs font-bold uppercase tracking-widest text-muted-foreground items-center">
             <span className="flex items-center">
               Level 
               <NumberInput 
                 min={1} max={100} 
                 value={slot.level} 
                 onChange={(val) => onChange({ ...slot, level: val })}
-                className="ml-2 w-16 h-6 bg-card/50 border border-border/50 rounded-md text-xs focus-within:border-blue-500/50 overflow-visible z-10"
+                className="ml-2 w-16 h-6 bg-card/50 border border-border/50 rounded-md text-xs focus-within:border-pd-accent/50 overflow-visible z-10"
               />
             </span>
-            <span className="w-1 h-1 rounded-full bg-border" />
+            <span className="w-1.5 h-1.5 rounded-full bg-border" />
             <span>#{String(pokemon.id).padStart(3, '0')}</span>
           </div>
         </div>
@@ -100,7 +103,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
           <div className="relative z-[60] rounded-2xl border border-border/50 bg-card/30 p-5 shadow-sm backdrop-blur-lg">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center">
-                <Sword className="w-4 h-4 mr-2 text-blue-400" />
+                <Sword className="w-4 h-4 mr-2 text-pd-accent" />
                 Moveset
               </h3>
             </div>
@@ -176,10 +179,6 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
         <div className="lg:col-span-7">
           <StatPanel slot={slot} onChange={onChange} />
         </div>
-      </div>
-
-      <div>
-         <WeaknessMatrix types={slot.teraType ? [slot.teraType] : pokemon.types} />
       </div>
     </div>
   );

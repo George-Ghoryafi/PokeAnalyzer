@@ -84,7 +84,11 @@ export const getPokemonDetails = async (name: string, signal?: AbortSignal): Pro
       description: ''
     })),
     learnset: [], 
-    rawMoves: data.moves // Pass raw moves directly to cache to allow localized UI filtering
+    rawMoves: data.moves, // Pass raw moves directly to cache to allow localized UI filtering
+    cries: data.cries ? {
+      latest: data.cries.latest || '',
+      legacy: data.cries.legacy || ''
+    } : undefined
   };
 };
 

@@ -39,15 +39,15 @@ export function PremiumSelect({ value, onChange, options, placeholder = "Select.
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full flex items-center justify-between bg-background/60 border border-border/50 hover:border-blue-500/50 rounded-xl p-3 text-sm font-bold text-foreground focus:outline-none shadow-inner transition-all",
-          isOpen && "border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)] bg-card",
+          "w-full flex items-center justify-between bg-background/60 border border-border/50 hover:border-pd-accent/50 rounded-xl p-3 text-sm font-bold text-foreground focus:outline-none shadow-inner transition-all",
+          isOpen && "border-pd-accent shadow-[0_0_15px_rgba(59,130,246,0.2)] bg-card",
           className
         )}
       >
         <span className={cn("truncate", !selectedOption && "text-muted-foreground font-medium")}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180 text-blue-400")} />
+        <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform duration-200", isOpen && "rotate-180 text-pd-accent")} />
       </button>
 
       {isOpen && (
@@ -72,12 +72,12 @@ export function PremiumSelect({ value, onChange, options, placeholder = "Select.
                   className={cn(
                     "w-full flex items-center justify-between px-3 py-2.5 cursor-pointer rounded-lg transition-all duration-150 mb-0.5 text-sm font-bold text-left",
                     isActive 
-                      ? "bg-blue-500/15 text-blue-400" 
-                      : "text-foreground hover:bg-white/5"
+                      ? "bg-pd-accent/15 text-pd-accent" 
+                      : "text-foreground hover:bg-foreground/5"
                   )}
                 >
                   <span className="truncate">{option.label}</span>
-                  {isActive && <Check className="w-3.5 h-3.5 text-blue-400 shrink-0 ml-2" />}
+                  {isActive && <Check className="w-3.5 h-3.5 text-pd-accent shrink-0 ml-2" />}
                 </button>
               );
             })}

@@ -93,13 +93,13 @@ export function MovePalette({ onClose, onSelectMove, allowedMoves, level }: Move
       <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border/30 bg-background/30 shrink-0">
         <button
           onClick={() => setFilterType('all')}
-          className={cn("px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-md transition-all", filterType === 'all' ? "bg-blue-500 text-white" : "bg-card border border-border/50 text-muted-foreground hover:text-foreground")}
+          className={cn("px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-md transition-all", filterType === 'all' ? "bg-pd-accent text-white" : "bg-card border border-border/50 text-muted-foreground hover:text-foreground")}
         >
           All
         </button>
         <button
           onClick={() => setFilterType('physical')}
-          className={cn("px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-md transition-all flex items-center gap-1", filterType === 'physical' ? "bg-red-500 text-white" : "bg-card border border-border/50 text-muted-foreground hover:text-foreground")}
+          className={cn("px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-md transition-all flex items-center gap-1", filterType === 'physical' ? "bg-pd-accent text-white" : "bg-card border border-border/50 text-muted-foreground hover:text-foreground")}
         >
           <CategoryIcon category="physical" className={cn("w-2.5 h-2.5", filterType === 'physical' && "text-white")} />
           Phys
@@ -124,7 +124,7 @@ export function MovePalette({ onClose, onSelectMove, allowedMoves, level }: Move
       <div className="flex-1 overflow-y-auto p-1.5 custom-scrollbar bg-background/50">
         {isLoading ? (
           <div className="py-8 text-center text-muted-foreground flex flex-col items-center">
-            <Loader2 className="h-6 w-6 mb-3 opacity-50 animate-spin text-blue-500" />
+            <Loader2 className="h-6 w-6 mb-3 opacity-50 animate-spin text-pd-accent" />
             <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Fetching Data</p>
           </div>
         ) : filtered.length === 0 ? (
@@ -149,24 +149,24 @@ export function MovePalette({ onClose, onSelectMove, allowedMoves, level }: Move
                   "flex flex-col px-3 py-2 rounded-xl transition-all duration-150 mb-1 border",
                   isLocked ? "opacity-40 grayscale cursor-not-allowed" : "cursor-pointer",
                   isActive && !isLocked
-                    ? "bg-blue-500/15 border-blue-500/40 shadow-sm"
+                    ? "bg-pd-accent/15 border-pd-accent/40 shadow-sm"
                     : isActive && isLocked
                     ? "bg-white/10 border-white/20"
-                    : "hover:bg-white/5 border-transparent"
+                    : "hover:bg-foreground/5 border-transparent"
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-md bg-card border border-white/5 shadow-inner">
+                    <div className="flex items-center justify-center w-6 h-6 rounded-md bg-card border border-foreground/10 shadow-inner">
                       <CategoryIcon category={move.category} className="w-3.5 h-3.5" />
                     </div>
                     <div className="flex flex-col items-start gap-0.5">
                       <div className="flex items-center gap-2">
-                        <h3 className={cn("text-xs font-black capitalize tracking-tight leading-none", isActive && !isLocked ? "text-blue-400" : "text-foreground line-through decoration-1 decoration-foreground/50")}>
+                        <h3 className={cn("text-xs font-black capitalize tracking-tight leading-none", isActive && !isLocked ? "text-pd-accent" : "text-foreground line-through decoration-1 decoration-foreground/50")}>
                           {move.name}
                         </h3>
                         {requirement?.method === 'level-up' ? (
-                          <span className={cn("text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm", isLocked ? "bg-red-500/20 text-red-400" : "bg-white/10 text-muted-foreground")}>
+                          <span className={cn("text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm", isLocked ? "bg-pd-accent/20 text-pd-accent" : "bg-white/10 text-muted-foreground")}>
                             Lv. {requirement.levelLearned}
                           </span>
                         ) : (
@@ -196,7 +196,7 @@ export function MovePalette({ onClose, onSelectMove, allowedMoves, level }: Move
                 {isActive && move.description && (
                   <div className="mt-2 pt-2 border-t border-border/40 text-[10px] text-muted-foreground leading-relaxed">
                     {isLocked ? (
-                      <span className="text-red-400 font-bold block mb-1">Move is locked until Level {requirement.levelLearned}.</span>
+                      <span className="text-pd-accent font-bold block mb-1">Move is locked until Level {requirement.levelLearned}.</span>
                     ) : null}
                     {move.description}
                   </div>

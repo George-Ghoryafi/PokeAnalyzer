@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
 import { MovePalette } from './MovePalette';
 
 export function CategoryIcon({ category, className }: { category: string, className?: string }) {
-  if (category === 'physical') return <Sword className={cn("w-3.5 h-3.5 text-red-400 drop-shadow-md", className)} />
+  if (category === 'physical') return <Sword className={cn("w-3.5 h-3.5 text-pd-accent drop-shadow-md", className)} />
   if (category === 'special') return <Zap className={cn("w-3.5 h-3.5 text-indigo-400 drop-shadow-md", className)} />
   return <Shield className={cn("w-3.5 h-3.5 text-slate-400 drop-shadow-md", className)} />
 }
@@ -28,28 +28,28 @@ export function MoveSlotCard({ move, isOpen, onToggle, onRemove, onSelectMove, a
       onClick={onToggle}
       className={cn(
         "w-full flex items-center justify-center border border-dashed rounded-2xl p-4 transition-all group shadow-inner",
-        isOpen ? "bg-card/80 border-blue-500 text-blue-400" : "bg-card/20 hover:bg-card/60 border-border/60 hover:border-blue-500/50 text-muted-foreground"
+        isOpen ? "bg-card/80 border-pd-accent text-pd-accent" : "bg-card/20 hover:bg-card/60 border-border/60 hover:border-pd-accent/50 text-muted-foreground"
       )}
     >
-      <Plus className="w-5 h-5 group-hover:text-blue-400 transition-colors mr-3 shrink-0" />
-      <span className="text-sm font-black group-hover:text-blue-400 transition-colors uppercase tracking-widest leading-none">Empty Move Slot</span>
+      <Plus className="w-5 h-5 group-hover:text-pd-accent transition-colors mr-3 shrink-0" />
+      <span className="text-sm font-black group-hover:text-pd-accent transition-colors uppercase tracking-widest leading-none">Empty Move Slot</span>
     </button>
   ) : (
     <div 
       onClick={onToggle}
       className={cn(
         "group relative w-full flex items-center justify-between border rounded-2xl p-3 shadow-md cursor-pointer transition-all overflow-hidden",
-        isOpen ? "bg-card border-blue-500" : "bg-card/60 hover:bg-card border-border/50 hover:border-blue-500/50"
+        isOpen ? "bg-card border-pd-accent" : "bg-card/60 hover:bg-card border-border/50 hover:border-pd-accent/50"
       )}
     >
       {/* Glossy gradient reflection */}
       <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
 
       <div className="flex items-center gap-4">
-        <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-background border border-white/5 shadow-inner shrink-0 relative">
+        <div className="flex flex-col items-center justify-center w-12 h-12 rounded-xl bg-background border border-foreground/10 shadow-inner shrink-0 relative">
            <CategoryIcon category={move.category} className="w-5 h-5" />
            {/* Faint elemental glow behind icon */}
-           {move.category === 'physical' && <div className="absolute inset-0 bg-red-500/10 blur-md" />}
+           {move.category === 'physical' && <div className="absolute inset-0 bg-pd-accent/10 blur-md" />}
            {move.category === 'special'  && <div className="absolute inset-0 bg-indigo-500/10 blur-md" />}
         </div>
         <div className="flex flex-col items-start gap-1">
@@ -74,7 +74,7 @@ export function MoveSlotCard({ move, isOpen, onToggle, onRemove, onSelectMove, a
           e.stopPropagation();
           onRemove(e);
         }}
-        className="absolute right-3 p-2 rounded-lg text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+        className="absolute right-3 p-2 rounded-lg text-muted-foreground hover:bg-pd-accent/20 hover:text-pd-accent transition-colors opacity-0 group-hover:opacity-100"
       >
         <X className="w-4 h-4" />
       </button>

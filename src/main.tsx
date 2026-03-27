@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { ThemeProvider } from './components/theme-provider'
 import './index.css'
 import App from './App.tsx'
 
@@ -19,13 +20,15 @@ const queryClient = new QueryClient({
 
 const persister = createSyncStoragePersister({
   storage: window.localStorage,
-  key: 'POKEMON_BUILDER_CACHE_V2', // Cache busting for schema update
+  key: 'POKEMON_BUILDER_CACHE_V3', // Cache busted: V2 had stale Pokemon type data
 })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-      <App />
-    </PersistQueryClientProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="pokebuilder-theme">
+      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+        <App />
+      </PersistQueryClientProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

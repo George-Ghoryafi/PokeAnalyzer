@@ -55,13 +55,13 @@ export function NumberInput({ value, min = 0, max = 999, step = 1, onChange, cla
       <div className="absolute right-0 inset-y-0 flex flex-col border-l border-border/20 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-3.5 overflow-hidden rounded-r-lg">
         <button 
           onClick={() => spin(1)}
-          className="flex-1 flex items-center justify-center bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 text-muted-foreground transition-colors"
+          className="flex-1 flex items-center justify-center bg-foreground/5 hover:bg-pd-accent/20 hover:text-pd-accent text-muted-foreground transition-colors"
         >
           <ChevronUp className="w-2.5 h-2.5" />
         </button>
         <button 
           onClick={() => spin(-1)}
-          className="flex-1 flex items-center justify-center bg-white/5 hover:bg-red-500/20 hover:text-red-400 text-muted-foreground transition-colors border-t border-border/20"
+          className="flex-1 flex items-center justify-center bg-foreground/5 hover:bg-pd-accent/20 hover:text-pd-accent text-muted-foreground transition-colors border-t border-border/20"
         >
           <ChevronDown className="w-2.5 h-2.5" />
         </button>

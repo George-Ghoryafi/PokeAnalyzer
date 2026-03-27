@@ -2,6 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { pokemonQueries } from '../../queries/pokemonQueries';
+import pokemonTypesRaw from '../../data/pokemonTypes.json';
+import { TypeBadge } from '../ui/TypeBadge';
+import type { PokemonType } from '../../data/mocks';
+
+const pokemonTypes = pokemonTypesRaw as Record<string, PokemonType[]>;
 import { gameQueries } from '../../queries/gameQueries';
 import type { Pokemon } from '../../data/mocks';
 import { cn, isPokemonAllowedInGame } from '../../lib/utils';
@@ -113,7 +118,7 @@ export function CommandPalette({ isOpen, onClose, onSelectPokemon, selectedGame 
       <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border/60 bg-card shadow-[0_0_50px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center border-b border-border/50 px-4 py-4">
           {isSelecting ? (
-            <Loader2 className="h-6 w-6 text-blue-500 mr-4 animate-spin" />
+            <Loader2 className="h-6 w-6 text-pd-accent mr-4 animate-spin" />
           ) : (
             <Search className="h-6 w-6 text-muted-foreground mr-4" />
           )}
@@ -155,17 +160,22 @@ export function CommandPalette({ isOpen, onClose, onSelectPokemon, selectedGame 
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={cn(
                     "flex items-center space-x-4 px-4 py-3 cursor-pointer rounded-xl transition-colors duration-150",
-                    isActive ? "bg-blue-500/10 border border-blue-500/30" : "hover:bg-white/5 border border-transparent",
+                    isActive ? "bg-pd-accent/10 border border-pd-accent/30" : "hover:bg-foreground/5 border border-transparent",
                     isSelecting && "opacity-50 pointer-events-none"
                   )}
                 >
-                  <img src={spriteUrl} alt={pokemon.name} className="w-14 h-14 object-contain drop-shadow bg-background/50 rounded-full" />
-                  <div className="flex-1">
+                  <img src={spriteUrl} alt={pokemon.name} className="w-14 h-14 object-contain drop-shadow bg-background/50 rounded-full shrink-0" />
+                  <div className="flex-1 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <h3 className={cn("text-lg font-black capitalize tracking-tight", isActive ? "text-blue-400" : "text-foreground")}>
+                      <h3 className={cn("text-lg font-black capitalize tracking-tight", isActive ? "text-pd-accent" : "text-foreground")}>
                         {pokemon.name.replace('-', ' ')}
                       </h3>
-                      <span className="text-xs font-bold text-muted-foreground tracking-widest">#{String(id).padStart(3, '0')}</span>
+                      <span className="text-xs font-bold text-muted-foreground tracking-widest hidden sm:inline-block">#{String(id).padStart(3, '0')}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 origin-right scale-90 sm:scale-100 pr-2">
+                       {pokemonTypes[pokemon.name]?.map((t) => (
+                          <TypeBadge key={t} type={t} />
+                       ))}
                     </div>
                   </div>
                 </div>
@@ -179,7 +189,7 @@ export function CommandPalette({ isOpen, onClose, onSelectPokemon, selectedGame 
             <span>↵ to select</span>
             <span>esc to close</span>
           </div>
-          <span className="text-blue-500/50">PokéAnalyzer Search</span>
+          <span className="text-pd-accent/50">PokéAnalyzer Search</span>
         </div>
       </div>
     </div>

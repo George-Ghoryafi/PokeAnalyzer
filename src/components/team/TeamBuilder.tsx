@@ -1,6 +1,7 @@
-import { Plus, X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import type { TeamSlotState } from '../../data/mocks';
 import { cn, isPokemonAllowedInGame } from '../../lib/utils';
+import { PokeballIcon } from '../ui/PokeballIcon';
 
 interface TeamBuilderProps {
   team: TeamSlotState[];
@@ -18,7 +19,7 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
   return (
     <div className={cn(
       "w-full flex flex-col justify-center py-2 lg:py-3 px-2 items-center transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-      !isExpanded && "cursor-pointer hover:bg-white/5"
+      !isExpanded && "cursor-pointer hover:bg-foreground/5"
     )} onClick={!isExpanded ? onToggleExpand : undefined}>
       
       {/* Expanded Grid */}
@@ -42,12 +43,12 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                 className={cn(
                   "relative flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl border-2 border-dashed transition-all duration-300 group overflow-hidden",
                   isSelected 
-                    ? "border-blue-500/70 bg-blue-500/10 text-blue-400 ring-2 ring-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-alias" 
-                    : "border-border/60 hover:border-muted-foreground/60 hover:bg-white/5 text-muted-foreground"
+                    ? "border-pd-accent/70 bg-pd-accent/10 text-pd-accent ring-2 ring-pd-accent/20 shadow-[0_0_15px_rgba(59,130,246,0.15)] cursor-alias" 
+                    : "border-border/60 hover:border-muted-foreground/60 hover:bg-foreground/5 text-muted-foreground"
                 )}
               >
-                <Plus className="w-5 h-5 md:w-6 md:h-6 opacity-40 transition-transform duration-500 group-hover:scale-125 group-hover:opacity-80 group-hover:rotate-90" />
-                {isSelected && <div className="absolute inset-0 bg-blue-400/5 blur-xl pointer-events-none" />}
+                <PokeballIcon className="w-6 h-6 md:w-8 md:h-8 opacity-20 transition-transform duration-500 group-hover:scale-110 group-hover:opacity-60" />
+                {isSelected && <div className="absolute inset-0 bg-pd-accent/5 blur-xl pointer-events-none" />}
               </button>
             );
           }
@@ -61,12 +62,12 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
               className={cn(
                 "relative group flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden backdrop-blur-sm",
                 isSelected && isLegal
-                  ? "border-blue-500/70 bg-blue-500/10 shadow-[0_0_20px_rgba(59,130,246,0.2)] ring-2 ring-blue-500/20 transform -translate-y-1 md:-translate-y-2" 
+                  ? "border-pd-accent/70 bg-pd-accent/10 shadow-[0_0_20px_rgba(59,130,246,0.2)] ring-2 ring-pd-accent/20 transform -translate-y-1 md:-translate-y-2" 
                   : isSelected && !isLegal
-                  ? "border-red-500/70 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.2)] ring-2 ring-red-500/20 transform -translate-y-1 md:-translate-y-2 opacity-100"
+                  ? "border-pd-accent/70 bg-pd-accent/10 shadow-[0_0_20px_rgba(239,68,68,0.2)] ring-2 ring-pd-accent/20 transform -translate-y-1 md:-translate-y-2 opacity-100"
                   : !isLegal
-                  ? "border-red-500/30 bg-red-500/5 opacity-50 hover:opacity-80 border-dashed"
-                  : "border-border/80 bg-card hover:border-muted-foreground/50 hover:bg-white/5 opacity-80 hover:opacity-100"
+                  ? "border-pd-accent/30 bg-pd-accent/5 opacity-50 hover:opacity-80 border-dashed"
+                  : "border-border/80 bg-card hover:border-muted-foreground/50 hover:bg-foreground/5 opacity-80 hover:opacity-100"
               )}
             >
               <button
@@ -74,7 +75,7 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                   e.stopPropagation();
                   onRemove(index);
                 }}
-                className="absolute top-1 right-1 lg:top-1.5 lg:right-1.5 p-1 rounded-full bg-background/90 text-muted-foreground hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-sm border border-border/50 backdrop-blur-md"
+                className="absolute top-1 right-1 lg:top-1.5 lg:right-1.5 p-1 rounded-full bg-background/90 text-muted-foreground hover:text-pd-accent hover:bg-pd-accent/10 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-sm border border-border/50 backdrop-blur-md"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -92,7 +93,7 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
               
               {!isLegal && (
                 <div className="absolute inset-0 m-auto flex items-center justify-center pointer-events-none">
-                  <AlertTriangle className="w-6 h-6 md:w-8 md:h-8 text-red-500/80 drop-shadow-lg" />
+                  <AlertTriangle className="w-6 h-6 md:w-8 md:h-8 text-pd-accent/80 drop-shadow-lg" />
                 </div>
               )}
               
@@ -131,17 +132,17 @@ export function TeamBuilder({ team, onRemove, onSelectSlot, onOpenSearch, select
                }}
                className={cn(
                  "w-8 h-8 md:w-10 md:h-10 rounded-full border flex items-center justify-center shadow-inner cursor-pointer hover:scale-110 transition-all overflow-hidden", 
-                 s.pokemon && isLegal ? "bg-card/50 border-border/50 hover:border-blue-400" :
-                 s.pokemon && !isLegal ? "bg-red-500/10 border-red-500/30 opacity-60" :
+                 s.pokemon && isLegal ? "bg-card/50 border-border/50 hover:border-pd-accent" :
+                 s.pokemon && !isLegal ? "bg-pd-accent/10 border-pd-accent/30 opacity-60" :
                  "bg-background/20 border-border/50 border-dashed",
-                 isSelected && isLegal && "border-blue-400 ring-2 ring-blue-500/20 bg-blue-500/10 shadow-[0_0_10px_rgba(59,130,246,0.3)] opacity-100",
-                 isSelected && !isLegal && "border-red-500 ring-2 ring-red-500/20 bg-red-500/20 opacity-100"
+                 isSelected && isLegal && "border-pd-accent ring-2 ring-pd-accent/20 bg-pd-accent/10 shadow-[0_0_10px_rgba(59,130,246,0.3)] opacity-100",
+                 isSelected && !isLegal && "border-pd-accent ring-2 ring-pd-accent/20 bg-pd-accent/20 opacity-100"
                )}
              >
                {s.pokemon ? (
                   <img src={s.pokemon.spriteUrl} className={cn("w-full h-full object-contain scale-[1.3] drop-shadow-sm pointer-events-none transition-all", !isLegal && "grayscale opacity-50")} />
                ) : (
-                  <Plus className={cn("w-3 h-3 pointer-events-none", isSelected ? "text-blue-400" : "text-muted-foreground/30")} />
+                  <PokeballIcon className={cn("w-5 h-5 opacity-20 pointer-events-none", isSelected ? "text-pd-accent opacity-50" : "text-muted-foreground/40")} />
                )}
              </div>
            );

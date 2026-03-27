@@ -15,7 +15,7 @@ export function PokemonCard({ pokemon, isSelected, onClick, className }: Pokemon
       onClick={onClick}
       className={cn(
         'relative group flex cursor-pointer items-center space-x-4 rounded-xl border bg-card p-3 shadow-sm transition-all duration-300 hover:shadow-md',
-        isSelected ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500' : 'border-border hover:border-muted-foreground/50 hover:bg-white/5',
+        isSelected ? 'border-pd-accent bg-pd-accent/10 ring-1 ring-pd-accent' : 'border-border hover:border-muted-foreground/50 hover:bg-foreground/5',
         className
       )}
     >

@@ -46,6 +46,10 @@ export interface Pokemon {
   // Potential moves a pokemon can learn (mock subset)
   learnset: Move[];
   rawMoves?: any[]; // Cached raw payload from PokeAPI containing version group mapping
+  cries?: {
+    latest: string;
+    legacy: string;
+  };
 }
 
 // Represents deep configuration of a team slot

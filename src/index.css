@@ -1,13 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0f172a;
-  --color-foreground: #f8fafc;
-  --color-card: #1e293b;
-  --color-card-foreground: #f8fafc;
-  --color-border: #334155;
-  --color-muted: #475569;
-  --color-muted-foreground: #94a3b8;
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-fg);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-fg);
+  
+  --color-pd-surface: var(--pd-surface);
+  --color-pd-border: var(--pd-border);
+  --color-pd-accent: var(--pd-accent);
+  --color-pd-accent-glow: var(--pd-accent-glow);
+  --color-pd-screen: var(--pd-screen);
+
   
   --color-type-normal: #A8A77A;
   --color-type-fire: #EE8130;
@@ -30,6 +37,40 @@
 }
 
 @layer base {
+  :root {
+    /* LIGHT MODE TARGETS */
+    --pd-surface: #ffffff;
+    --pd-border: #171717; /* Neutral 900 */
+    --pd-accent: #ef4444; /* Red 500 */
+    --pd-accent-glow: rgba(239, 68, 68, 0.4);
+    --pd-screen: #f4f4f5; /* Zinc 100 */
+    
+    --bg: #d4d4d8; /* Zinc 300 - Tabletop */
+    --fg: #09090b;
+    --card: #ffffff;
+    --card-fg: #09090b;
+    --border: #e4e4e7;
+    --muted: #f4f4f5;
+    --muted-fg: #71717a;
+  }
+
+  .dark {
+    /* DARK MODE TARGETS */
+    --pd-surface: #27272a; /* Zinc 800 */
+    --pd-border: #09090b; /* Zinc 950 */
+    --pd-accent: #f97316; /* Orange 500 */
+    --pd-accent-glow: rgba(249, 115, 22, 0.4);
+    --pd-screen: #18181b; /* Zinc 900 */
+    
+    --bg: #000000; /* Absolute Black - Tabletop */
+    --fg: #fafafa;
+    --card: #18181b;
+    --card-fg: #fafafa;
+    --border: #27272a;
+    --muted: #27272a;
+    --muted-fg: #a1a1aa;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

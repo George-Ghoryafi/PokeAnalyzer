@@ -17,10 +17,10 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
   const totalEvs = Object.values(evs).reduce((sum, val) => sum + val, 0);
 
   const statConfig = [
-    { label: 'HP', key: 'hp', color: 'bg-red-500' },
+    { label: 'HP', key: 'hp', color: 'bg-pd-accent' },
     { label: 'Atk', key: 'attack', color: 'bg-orange-500' },
     { label: 'Def', key: 'defense', color: 'bg-yellow-500' },
-    { label: 'SpA', key: 'specialAttack', color: 'bg-blue-500' },
+    { label: 'SpA', key: 'specialAttack', color: 'bg-pd-accent' },
     { label: 'SpD', key: 'specialDefense', color: 'bg-green-500' },
     { label: 'Spe', key: 'speed', color: 'bg-pink-500' },
   ];
@@ -31,7 +31,7 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
         <div className="flex flex-col">
           <h3 className="text-lg font-black tracking-tight text-foreground">Base Stats & Spread</h3>
           <span className="text-xs text-muted-foreground font-bold mt-1">
-            EVs: <span className={totalEvs > 510 ? "text-red-400" : "text-blue-400"}>{totalEvs}</span> / 510
+            EVs: <span className={totalEvs > 510 ? "text-pd-accent" : "text-pd-accent"}>{totalEvs}</span> / 510
           </span>
         </div>
         {nature && (
@@ -66,8 +66,8 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
           const percentage = Math.min(100, Math.max(0, (finalTotal / 500) * 100)); // cap visually
           
           let natureColor = "text-muted-foreground";
-          if (nature?.increasedStat === key) natureColor = "text-red-400";
-          if (nature?.decreasedStat === key) natureColor = "text-blue-400";
+          if (nature?.increasedStat === key) natureColor = "text-pd-accent";
+          if (nature?.decreasedStat === key) natureColor = "text-pd-accent";
           
           return (
             <div key={key} className="flex items-center text-sm group">
@@ -79,7 +79,7 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
               <div className="w-14 ml-2">
                 <NumberInput 
                   min={0} max={252} step={4}
-                  className="w-full h-6 bg-background/50 focus-within:bg-background border border-border/50 focus-within:border-blue-500/50 rounded-lg text-xs shadow-inner transition-all overflow-visible"
+                  className="w-full h-6 bg-background/50 focus-within:bg-background border border-border/50 focus-within:border-pd-accent/50 rounded-lg text-xs shadow-inner transition-all overflow-visible"
                   value={evValue}
                   onChange={(val) => onChange({ ...slot, evs: { ...evs, [key]: val } })}
                 />
@@ -88,7 +88,7 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
               <div className="w-12 ml-2">
                 <NumberInput 
                   min={0} max={31}
-                  className="w-full h-6 bg-background/50 focus-within:bg-background border border-border/50 focus-within:border-blue-500/50 rounded-lg text-xs shadow-inner transition-all overflow-visible"
+                  className="w-full h-6 bg-background/50 focus-within:bg-background border border-border/50 focus-within:border-pd-accent/50 rounded-lg text-xs shadow-inner transition-all overflow-visible"
                   value={ivValue}
                   onChange={(val) => onChange({ ...slot, ivs: { ...ivs, [key]: val } })}
                 />
