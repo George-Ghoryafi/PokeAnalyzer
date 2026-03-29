@@ -15,6 +15,7 @@ export interface BaseStats {
 export interface Ability {
   name: string;
   description: string;
+  isHidden?: boolean;
 }
 
 export interface Move {
@@ -43,6 +44,7 @@ export interface Nature {
 export interface Pokemon {
   id: number;
   name: string;
+  speciesName: string;
   types: PokemonType[];
   stats: BaseStats;
   spriteUrl: string;
@@ -115,6 +117,7 @@ export const MOCK_POKEMON: Pokemon[] = [
   {
     id: 1,
     name: "Bulbasaur",
+    speciesName: "bulbasaur",
     types: ["grass", "poison"],
     stats: { hp: 45, attack: 49, defense: 49, specialAttack: 65, specialDefense: 65, speed: 45 },
     spriteUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/1.png",
@@ -124,6 +127,7 @@ export const MOCK_POKEMON: Pokemon[] = [
   {
     id: 6,
     name: "Charizard",
+    speciesName: "charizard",
     types: ["fire", "flying"],
     stats: { hp: 78, attack: 84, defense: 78, specialAttack: 109, specialDefense: 85, speed: 100 },
     spriteUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png",
@@ -133,6 +137,7 @@ export const MOCK_POKEMON: Pokemon[] = [
   {
     id: 94,
     name: "Gengar",
+    speciesName: "gengar",
     types: ["ghost", "poison"],
     stats: { hp: 60, attack: 65, defense: 60, specialAttack: 130, specialDefense: 75, speed: 110 },
     spriteUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png",
@@ -142,6 +147,7 @@ export const MOCK_POKEMON: Pokemon[] = [
   {
     id: 149,
     name: "Dragonite",
+    speciesName: "dragonite",
     types: ["dragon", "flying"],
     stats: { hp: 91, attack: 134, defense: 95, specialAttack: 100, specialDefense: 100, speed: 80 },
     spriteUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/149.png",
@@ -151,6 +157,7 @@ export const MOCK_POKEMON: Pokemon[] = [
   {
     id: 212,
     name: "Scizor",
+    speciesName: "scizor",
     types: ["bug", "steel"],
     stats: { hp: 70, attack: 130, defense: 100, specialAttack: 55, specialDefense: 80, speed: 65 },
     spriteUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/212.png",
@@ -160,6 +167,7 @@ export const MOCK_POKEMON: Pokemon[] = [
   {
     id: 700,
     name: "Sylveon",
+    speciesName: "sylveon",
     types: ["fairy"],
     stats: { hp: 95, attack: 65, defense: 65, specialAttack: 110, specialDefense: 130, speed: 60 },
     spriteUrl: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/700.png",

@@ -1,13 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { pokemonQueries } from '../../queries/pokemonQueries';
-import { Shield, Sword, Zap, Loader2 } from 'lucide-react';
+import { Shield, Sword, Zap, Loader2, ChevronDown } from 'lucide-react';
 import type { TeamSlotState, Move } from '../../data/mocks';
-import { MEGA_STONE_MAP } from '../../data/megaStones';
 import { StatPanel } from '../analysis/StatPanel';
 import { MoveSlotCard } from './MoveSlotCard';
 import { ItemPalette } from './ItemPalette';
-import { PremiumSelect } from '../ui/PremiumSelect';
 import { NumberInput } from '../ui/NumberInput';
 import { TypeBadge } from '../ui/TypeBadge';
 import { cn } from '../../lib/utils';
@@ -27,6 +25,7 @@ interface SlotEditorProps {
 export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
   const [activeMoveSlot, setActiveMoveSlot] = useState<number | null>(null);
   const [isItemPaletteOpen, setItemPaletteOpen] = useState(false);
+  const [isAbilityPaletteOpen, setAbilityPaletteOpen] = useState(false);
 
   const pokemon = slot.pokemon;
 
@@ -65,50 +64,103 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
 
   if (!pokemon) return null;
 
-  const megaMapping = slot.item ? MEGA_STONE_MAP[slot.item.name] : null;
-  const canMegaEvolve = Boolean(megaMapping && megaMapping.base === pokemon?.name);
-  const [isMegaView, setIsMegaView] = useState(false);
-  const [isAnimatingMega, setIsAnimatingMega] = useState(false);
+  const { data: speciesData } = useQuery({
+    ...pokemonQueries.species(pokemon.speciesName),
+    enabled: !!pokemon
+  });
+
+  const altForms = useMemo(() => {
+    if (!speciesData || !pokemon) return [];
+    
+    // Sort logic to prefer mega and gmax heavily
+    return speciesData.varieties
+      .map((v: any) => v.pokemon.name as string)
+      .filter((n: string) => n !== pokemon.name && !n.includes('totem') && !n.includes('-cap') && !n.includes('starter') && n !== 'greninja-battle-bond')
+      .sort((a, b) => {
+        if (a.includes('mega') && !b.includes('mega')) return -1;
+        if (!a.includes('mega') && b.includes('mega')) return 1;
+        if (a.includes('gmax') && !b.includes('gmax')) return -1;
+        if (!a.includes('gmax') && b.includes('gmax')) return 1;
+        return a.localeCompare(b);
+      });
+  }, [speciesData, pokemon]);
+
+  const [selectedFormName, setSelectedFormName] = useState<string | null>(null);
+  const [animatingTargetForm, setAnimatingTargetForm] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(true);
 
   // Remove initial spin after load
   useEffect(() => {
     const t = setTimeout(() => setIsSpinning(false), 2000);
     return () => clearTimeout(t);
-  }, [slot.item?.name]);
+  }, [pokemon?.name]);
 
   useEffect(() => {
-    if (!canMegaEvolve && isMegaView) {
-      setIsMegaView(false);
-      setIsAnimatingMega(false);
-    }
-  }, [canMegaEvolve, isMegaView]);
+    setSelectedFormName(null);
+    setAnimatingTargetForm(null);
+  }, [pokemon?.name]);
 
-  // Pre-fetch the mega form if stone is equipped for instant toggling
-  const megaQuery = useQuery({
-    ...pokemonQueries.detail(megaMapping?.mega || ''),
-    enabled: canMegaEvolve
+  const formQuery = useQuery({
+    ...pokemonQueries.detail(selectedFormName || ''),
+    enabled: !!selectedFormName
   });
 
-  const handleToggleMega = () => {
-    // Retrigger the ring spin
+  const checkFormUnlocked = (formName: string): boolean => {
+    if (formName === 'greninja-ash') {
+      return slot.ability?.name.toLowerCase().replace(/ /g, '-') === 'battle-bond';
+    }
+
+    if (formName.includes('mega') || formName.includes('primal')) {
+      if (!slot.item) return false;
+      const itemName = slot.item.name.toLowerCase();
+
+      if (formName.includes('primal')) {
+        if (formName === 'groudon-primal') return itemName.includes('red orb');
+        if (formName === 'kyogre-primal') return itemName.includes('blue orb');
+      }
+
+      if (formName.includes('-mega-x')) return itemName.endsWith('ite x') || itemName.endsWith('ite-x');
+      if (formName.includes('-mega-y')) return itemName.endsWith('ite y') || itemName.endsWith('ite-y');
+
+      if (formName.includes('-mega')) {
+        return itemName.endsWith('ite') && itemName.startsWith(pokemon.name.substring(0, 4));
+      }
+    }
+
+    if (formName.includes('gmax')) {
+      const gmaxGames = ['sword-shield', 'the-isle-of-armor', 'the-crown-tundra', 'national'];
+      return gmaxGames.includes(selectedGame);
+    }
+
+    return true; // Others default to unlocked
+  };
+
+  const handleToggleForm = (targetForm: string) => {
+    if (!checkFormUnlocked(targetForm)) return;
+
     setIsSpinning(false);
     requestAnimationFrame(() => requestAnimationFrame(() => setIsSpinning(true)));
     setTimeout(() => setIsSpinning(false), 2000);
 
-    if (!isMegaView) {
-      if (isAnimatingMega) return; // Prevent spamming
-      setIsAnimatingMega(true);
-      setTimeout(() => setIsMegaView(true), 300); // Swap mid-flash
-      setTimeout(() => setIsAnimatingMega(false), 800); // Clean up classes
+    if (selectedFormName !== targetForm) {
+      if (animatingTargetForm !== null) return; // Prevent spamming
+      setAnimatingTargetForm(targetForm);
+      setTimeout(() => setSelectedFormName(targetForm), 300); // Swap mid-flash
+      setTimeout(() => setAnimatingTargetForm(null), 800); // Clean up classes
     } else {
-      setIsMegaView(false);
+      setSelectedFormName(null);
     }
   };
 
-  const displayPokemon = (isMegaView && megaQuery.data ? megaQuery.data : pokemon) as typeof pokemon;
+  const unlockedForms = altForms.filter(checkFormUnlocked);
+  const currentActiveForm = animatingTargetForm || selectedFormName;
+  const displayedForms = unlockedForms.filter(formName => !currentActiveForm || formName === currentActiveForm);
+
+  const displayPokemon = (selectedFormName && formQuery.data ? formQuery.data : pokemon) as typeof pokemon;
 
   if (!displayPokemon) return null;
+
+  const isAnimating = animatingTargetForm !== null;
 
   return (
     <div className="h-full flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
@@ -118,15 +170,18 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
         <div className="flex items-center space-x-4 md:space-x-6">
           <div className="relative h-20 w-20 flex-shrink-0 z-20">
             <div className="absolute inset-0 rounded-full bg-card shadow-inner border border-border/60" />
-            {isAnimatingMega && (
-              <div className="absolute inset-[-40%] rounded-full border-[10px] border-cyan-400 opacity-0 animate-mega-burst pointer-events-none mix-blend-screen" />
+            {isAnimating && (
+              <div className={cn(
+                  "absolute inset-[-40%] rounded-full border-[10px] opacity-0 animate-mega-burst pointer-events-none mix-blend-screen",
+                  animatingTargetForm.includes('gmax') ? "border-red-500" : "border-cyan-400"
+              )} />
             )}
             <img 
               src={displayPokemon.spriteUrl} 
               alt={displayPokemon.name}
               className={cn(
                 "absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] object-contain drop-shadow-xl z-10 origin-center transition-all duration-300",
-                isAnimatingMega && "animate-mega-flash"
+                isAnimating && "animate-mega-flash"
               )}
             />
           </div>
@@ -154,32 +209,54 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
           </div>
         </div>
 
-        {canMegaEvolve && (
-          <div className="flex-shrink-0 self-start md:self-center ml-4">
-            <button
-              onClick={handleToggleMega}
-              disabled={isAnimatingMega}
-              className="group relative overflow-hidden rounded-full p-[2px] transition-all hover:scale-[1.02] active:scale-95 border-none shadow-md"
-            >
-              <div className={cn(
-                "absolute inset-[-50%] bg-mega-ring transition-opacity", 
-                isSpinning && "animate-[spin_1.5s_cubic-bezier(0.1,0.7,0.1,1)]",
-                isMegaView ? "opacity-100" : "opacity-40 group-hover:opacity-80"
-              )} />
-              <div className="relative flex items-center h-full w-full rounded-full bg-black/90 px-4 py-2 z-10 backdrop-blur-sm">
-                {megaQuery.isLoading && !megaQuery.data ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-2 text-cyan-400" />
-                ) : (
-                  <span className={cn(
-                      "text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-colors drop-shadow-sm flex items-center gap-2",
-                      isMegaView ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400" : "text-zinc-400 group-hover:text-zinc-200",
-                      isAnimatingMega && "opacity-50"
-                  )}>
-                    {isMegaView ? 'Mega Active' : 'Mega Form'}
-                  </span>
-                )}
-              </div>
-            </button>
+        {displayedForms.length > 0 && (
+          <div className="flex-shrink-0 self-start md:self-center ml-4 flex flex-col items-end gap-2">
+            {displayedForms.map(formName => {
+              const isMega = formName.includes('mega') || formName.includes('primal');
+              const isGmax = formName.includes('gmax');
+              const active = selectedFormName === formName;
+
+              let label = 'Form';
+              if (formName.includes('mega-x')) label = 'Mega X';
+              else if (formName.includes('mega-y')) label = 'Mega Y';
+              else if (formName.includes('mega')) label = 'Mega Form';
+              else if (formName.includes('gmax')) label = 'G-Max';
+              else if (formName.includes('primal')) label = 'Primal';
+              else if (formName.includes('ash')) label = 'Ash Bond';
+              else label = formName.replace(pokemon.name + '-', '').replace(/-/g, ' ');
+
+              return (
+                <button
+                  key={formName}
+                  onClick={() => handleToggleForm(formName)}
+                  disabled={isAnimating && !active}
+                  title={`Toggle ${label}`}
+                  className="group relative overflow-hidden rounded-full p-[2px] transition-all border-none shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer"
+                >
+                  <div className={cn(
+                    "absolute inset-[-50%] transition-opacity", 
+                    isMega ? "bg-mega-ring" : isGmax ? "bg-gmax-ring" : "bg-zinc-600",
+                    isSpinning && active ? "animate-[spin_1.5s_cubic-bezier(0.1,0.7,0.1,1)]" : "",
+                    active ? "opacity-100" : "opacity-40 group-hover:opacity-80"
+                  )} />
+                  <div className="relative flex items-center h-full w-full rounded-full bg-black/90 px-4 py-2 z-10 backdrop-blur-sm">
+                    {active && formQuery.isLoading ? (
+                      <Loader2 className="w-3 h-3 animate-spin mx-2 text-primary" />
+                    ) : (
+                      <span className={cn(
+                          "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] transition-colors drop-shadow-sm flex items-center",
+                          active && isMega ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400" :
+                          active && isGmax ? "text-red-500" :
+                          active ? "text-primary" : "text-zinc-400 group-hover:text-zinc-200",
+                          isAnimating ? "opacity-50" : "opacity-100"
+                      )}>
+                        {label} {active ? 'On' : ''}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -230,25 +307,76 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
                 <Zap className="w-3.5 h-3.5 mr-2 text-yellow-400" /> Ability
               </h3>
-              {isMegaView ? (
+              {selectedFormName !== null ? (
                 <div className="relative w-full h-10 px-3 flex flex-col justify-center rounded-lg bg-black/60 border border-cyan-500/20 shadow-inner group overflow-hidden">
                   <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-transparent blur-xl pointer-events-none mix-blend-screen" />
-                  <div className="relative z-10 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-400/80 mb-0.5">Mega Ability</div>
+                  <div className="relative z-10 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-400/80 mb-0.5">
+                    {selectedFormName.includes('mega') ? 'Mega' : selectedFormName.includes('gmax') ? 'G-Max' : selectedFormName.includes('primal') ? 'Primal' : 'Form'} Ability
+                  </div>
                   <div className="relative z-10 text-xs font-black text-white capitalize truncate drop-shadow-sm">
                     {displayPokemon.abilities[0]?.name || 'Unknown'}
                   </div>
                 </div>
               ) : (
-                <PremiumSelect 
-                  value={slot.ability?.name || ''}
-                  onChange={(val) => {
-                    const ability = pokemon.abilities.find(a => a.name === val) || null;
-                    onChange({ ...slot, ability });
-                  }}
-                  options={pokemon.abilities.map(a => ({ label: a.name, value: a.name }))}
-                  placeholder="Select Ability"
-                  renderUpwards
-                />
+                <div className="relative w-full">
+                  <button
+                    onClick={() => {
+                        setAbilityPaletteOpen(!isAbilityPaletteOpen);
+                        setItemPaletteOpen(false);
+                    }}
+                    className={cn(
+                      "w-full h-10 px-3 flex items-center justify-between rounded-lg bg-black/40 border transition-all text-left group",
+                      isAbilityPaletteOpen ? "border-cyan-500/50" : "border-border/50 hover:bg-black/60 hover:border-cyan-500/30"
+                    )}
+                  >
+                    <span className={slot.ability ? "text-cyan-400 font-bold capitalize truncate" : "text-muted-foreground uppercase tracking-widest text-[10px] font-bold"}>
+                      {slot.ability ? slot.ability.name : '- Select Ability -'}
+                    </span>
+                    <ChevronDown 
+                      className="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 group-hover:text-cyan-400" 
+                      style={{ transform: isAbilityPaletteOpen ? 'rotate(180deg)' : 'none' }} 
+                    />
+                  </button>
+
+                  {isAbilityPaletteOpen && (
+                    <div className="absolute left-0 right-0 lg:-right-4 lg:w-80 bottom-full mb-2 z-[100] bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                      <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto custom-scrollbar">
+                        {pokemon.abilities.map(a => (
+                          <button
+                            key={a.name}
+                            onClick={() => {
+                              onChange({ ...slot, ability: a });
+                              setAbilityPaletteOpen(false);
+                            }}
+                            className={cn(
+                              "w-full flex w-full flex-col text-left px-3 py-2.5 rounded-xl transition-all border",
+                              slot.ability?.name === a.name 
+                                ? "bg-cyan-500/10 border-cyan-500/30" 
+                                : "bg-transparent border-transparent hover:bg-white/5 hover:border-white/10"
+                            )}
+                          >
+                            <div className="flex items-center justify-between w-full mb-1">
+                               <span className={cn(
+                                 "text-[13px] font-black capitalize tracking-tight",
+                                 slot.ability?.name === a.name ? "text-cyan-400 drop-shadow-md" : "text-foreground"
+                               )}>
+                                 {a.name}
+                               </span>
+                               {a.isHidden && (
+                                 <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                                   Hidden
+                                 </span>
+                               )}
+                            </div>
+                            <span className="text-[11px] font-medium text-muted-foreground leading-snug">
+                              {a.description || 'Description unavailable.'}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
             <div className="rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg">
@@ -258,7 +386,10 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               
               <div className="relative w-full">
                 <button
-                  onClick={() => setItemPaletteOpen(!isItemPaletteOpen)}
+                  onClick={() => {
+                    setItemPaletteOpen(!isItemPaletteOpen);
+                    setAbilityPaletteOpen(false);
+                  }}
                   className="w-full h-10 px-3 flex items-center justify-between rounded-lg bg-black/40 border border-border/50 text-xs font-bold hover:bg-black/60 hover:border-emerald-500/50 transition-all text-left group"
                 >
                   <div className="flex items-center gap-2 truncate">

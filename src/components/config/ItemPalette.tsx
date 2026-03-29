@@ -37,7 +37,7 @@ export function ItemPalette({ onClose, onSelectItem, selectedGame }: ItemPalette
     } else if (filterType === 'choice') {
       filtered = filtered.filter(i => i.name.startsWith('choice-'));
     } else if (filterType === 'stones') {
-      filtered = filtered.filter(i => i.name.endsWith('ite'));
+      filtered = filtered.filter(i => i.name.endsWith('ite') || i.name.endsWith('ite-x') || i.name.endsWith('ite-y') || i.name === 'red-orb' || i.name === 'blue-orb');
     } else if (filterType === 'z-crystals') {
       filtered = filtered.filter(i => i.name.endsWith('-z') || i.name.endsWith('-z--held'));
     } else if (filterType === 'all' && !isSearching) {

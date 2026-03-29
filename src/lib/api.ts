@@ -59,6 +59,22 @@ export const getPokedex = async (url: string, signal?: AbortSignal): Promise<Pok
   return response.json();
 };
 
+export interface PokemonSpeciesResponse {
+  varieties: {
+    is_default: boolean;
+    pokemon: {
+      name: string;
+      url: string;
+    }
+  }[];
+}
+
+export const getPokemonSpeciesDetails = async (name: string, signal?: AbortSignal): Promise<PokemonSpeciesResponse> => {
+  const response = await fetch(`${BASE_URL}/pokemon-species/${name.toLowerCase()}`, { signal });
+  if (!response.ok) throw new Error(`Failed to fetch species details for ${name}`);
+  return response.json();
+};
+
 export const getPokemonDetails = async (name: string, signal?: AbortSignal): Promise<Pokemon> => {
   const response = await fetch(`${BASE_URL}/pokemon/${name.toLowerCase()}`, { signal });
   if (!response.ok) throw new Error(`Failed to fetch details for ${name}`);
@@ -67,6 +83,7 @@ export const getPokemonDetails = async (name: string, signal?: AbortSignal): Pro
   return {
     id: data.id,
     name: data.name,
+    speciesName: data.species.name,
     types: data.types.map((t: any) => t.type.name as PokemonType),
     stats: {
       hp: data.stats.find((s: any) => s.stat.name === 'hp')?.base_stat || 0,
@@ -79,10 +96,35 @@ export const getPokemonDetails = async (name: string, signal?: AbortSignal): Pro
     spriteUrl: data.sprites?.other?.['official-artwork']?.front_default 
       || data.sprites?.front_default 
       || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${data.id}.png`,
-    abilities: data.abilities.map((a: any) => ({
-      name: a.ability.name.replace('-', ' '),
-      description: ''
-    })),
+    abilities: await Promise.all(data.abilities.map(async (a: any) => {
+      try {
+        const abilityRes = await fetch(a.ability.url, { signal });
+        if (!abilityRes.ok) throw new Error();
+        const abilityData = await abilityRes.json();
+        
+        // Find English flavor text, fallback to Japanese or empty
+        const enEntry = abilityData.flavor_text_entries.find((e: any) => e.language.name === 'en');
+        const description = enEntry ? enEntry.flavor_text.replace(/[\n\f]/g, ' ') : '';
+        
+        return {
+          name: a.ability.name.replace('-', ' '),
+          description,
+          isHidden: Boolean(a.is_hidden)
+        };
+      } catch (e) {
+        return {
+          name: a.ability.name.replace('-', ' '),
+          description: '',
+          isHidden: Boolean(a.is_hidden)
+        };
+      }
+    })).then(abilities => 
+      abilities.concat(name.toLowerCase() === 'greninja' ? [{ 
+        name: 'battle bond', 
+        description: 'Defeating an opposing Pokémon boosts the Pokémon’s form.', 
+        isHidden: true 
+      }] : [])
+    ),
     learnset: [], 
     rawMoves: data.moves, // Pass raw moves directly to cache to allow localized UI filtering
     cries: data.cries ? {

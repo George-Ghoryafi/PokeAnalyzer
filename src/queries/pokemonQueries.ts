@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getAllPokemon, getPokemonDetails } from '../lib/api';
+import { getAllPokemon, getPokemonDetails, getPokemonSpeciesDetails } from '../lib/api';
 
 export const pokemonQueries = {
   all: () => ['pokemon'] as const,
@@ -12,5 +12,10 @@ export const pokemonQueries = {
   detail: (name: string) => queryOptions({
     queryKey: [...pokemonQueries.details(), name],
     queryFn: ({ signal }) => getPokemonDetails(name, signal),
+  }),
+  speciesDetails: () => [...pokemonQueries.all(), 'species'] as const,
+  species: (name: string) => queryOptions({
+    queryKey: [...pokemonQueries.speciesDetails(), name],
+    queryFn: ({ signal }) => getPokemonSpeciesDetails(name, signal),
   }),
 };
