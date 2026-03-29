@@ -18,9 +18,23 @@ const queryClient = new QueryClient({
   },
 })
 
+const CURRENT_CACHE_KEY = 'POKEMON_BUILDER_CACHE_V4'; // Cache busted: V3 lacked Mega/GMax dynamic forms
+
+// Garbage collect old caches to prevent 5MB storage quota limits over time
+try {
+  for (let i = window.localStorage.length - 1; i >= 0; i--) {
+    const key = window.localStorage.key(i);
+    if (key && key.startsWith('POKEMON_BUILDER_CACHE_') && key !== CURRENT_CACHE_KEY) {
+      window.localStorage.removeItem(key);
+    }
+  }
+} catch (e) {
+  console.error("Failed to garbage collect local storage caches", e);
+}
+
 const persister = createSyncStoragePersister({
   storage: window.localStorage,
-  key: 'POKEMON_BUILDER_CACHE_V3', // Cache busted: V2 had stale Pokemon type data
+  key: CURRENT_CACHE_KEY,
 })
 
 createRoot(document.getElementById('root')!).render(
