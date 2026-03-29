@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, X } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { pokemonQueries } from '../../queries/pokemonQueries';
 import pokemonTypesRaw from '../../data/pokemonTypes.json';
@@ -118,7 +119,7 @@ export function CommandPalette({ isOpen, onClose, onSelectPokemon, selectedGame 
       <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border/60 bg-card shadow-[0_0_50px_rgba(0,0,0,0.6)] animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center border-b border-border/50 px-4 py-4">
           {isSelecting ? (
-            <Loader2 className="h-6 w-6 text-pd-accent mr-4 animate-spin" />
+            <div className="mr-4"><PokeballLoader size={24} className="opacity-80" /></div>
           ) : (
             <Search className="h-6 w-6 text-muted-foreground mr-4" />
           )}
@@ -138,7 +139,7 @@ export function CommandPalette({ isOpen, onClose, onSelectPokemon, selectedGame 
         <div className="max-h-[50vh] overflow-y-auto p-2 custom-scrollbar">
           {isLoading ? (
             <div className="py-16 text-center text-muted-foreground flex flex-col items-center">
-              <Loader2 className="h-10 w-10 mb-4 opacity-50 animate-spin" />
+              <PokeballLoader size={40} className="mb-4 opacity-60" />
               <p className="text-lg font-medium">Loading Pokédex...</p>
             </div>
           ) : filtered.length === 0 ? (

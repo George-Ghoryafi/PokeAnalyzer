@@ -1,4 +1,5 @@
-import { ShieldAlert, Shield, AlertTriangle, Crosshair, XCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { ShieldAlert, Shield, AlertTriangle, Crosshair, XCircle, CheckCircle2 } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import { PokedexTooltip } from '../ui/PokedexTooltip';
 import type { TeamSlotState, PokemonType, Move } from '../../data/mocks';
 import { cn } from '../../lib/utils';
@@ -33,7 +34,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
   if (isLoadingTypes || !typeMatrix) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in duration-1000 text-center px-4 pb-32 h-full min-h-[400px]">
-        <Loader2 className="w-12 h-12 animate-spin text-pd-accent mb-6" />
+        <PokeballLoader size={48} className="mb-6 opacity-80" />
         <h2 className="text-2xl font-black tracking-tight text-foreground uppercase">Loading Type Matrix</h2>
         <p className="text-muted-foreground font-medium mt-2">Fetching matchup data from PokeAPI…</p>
       </div>

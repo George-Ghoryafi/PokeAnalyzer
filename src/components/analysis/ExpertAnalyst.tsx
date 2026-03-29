@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { TeamSlotState } from '../../data/mocks';
 import { compileTeamTelemetry } from '../../lib/telemetry';
-import { Sparkles, AlertTriangle, Lightbulb, Zap, Loader2, Cpu, Download } from 'lucide-react';
+import { Sparkles, AlertTriangle, Lightbulb, Zap, Cpu, Download } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import { cn } from '../../lib/utils';
 import { CreateMLCEngine } from '@mlc-ai/web-llm';
 
@@ -113,7 +114,7 @@ export function ExpertAnalyst({ team }: ExpertAnalystProps) {
           {isDownloading ? (
             <><Download className="w-4 h-4 animate-bounce" /> Loading Weights</>
           ) : isAnalyzing ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Compiling</>
+            <><PokeballLoader size={16} /> Compiling</>
           ) : (
             <><Cpu className="w-4 h-4" /> Run Diagnostics</>
           )}

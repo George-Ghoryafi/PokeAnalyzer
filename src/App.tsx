@@ -4,6 +4,7 @@ import { SlotEditor } from './components/config/SlotEditor';
 import { TeamCoverage } from './components/analysis/TeamCoverage';
 import { CommandPalette } from './components/search/CommandPalette';
 import { GameSelector } from './components/ui/GameSelector';
+import { TeamManager } from './components/team/TeamManager';
 import { createEmptyStats } from './data/mocks';
 import type { TeamSlotState, Pokemon } from './data/mocks';
 import { cn, isPokemonAllowedInGame } from './lib/utils';
@@ -128,6 +129,16 @@ export default function App() {
                  Mode:
                </span>
                <GameSelector value={selectedGame} onChange={setSelectedGame} />
+               <div className="w-[1px] h-4 bg-border/50 mx-4" />
+               <TeamManager 
+                 currentTeam={team} 
+                 selectedGame={selectedGame}
+                 onLoadTeam={(loadedTeam, game) => {
+                   setTeam(loadedTeam);
+                   setSelectedGame(game);
+                   setSelectedSlotIndex(0);
+                 }}
+               />
              </div>
              {/* Center toggle for config/coverage */}
              <div className="flex items-center bg-pd-screen border border-pd-border/20 rounded-lg p-0.5 shadow-inner shrink-0 mr-1 md:mr-3">

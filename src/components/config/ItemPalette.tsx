@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { itemQueries } from '../../queries/itemQueries';
 import type { Item } from '../../data/mocks';
@@ -178,7 +179,7 @@ export function ItemPalette({ onClose, onSelectItem, selectedGame }: ItemPalette
       <div className="flex-1 overflow-y-auto p-1.5 custom-scrollbar bg-card/50">
         {showLoading ? (
           <div className="py-8 text-center text-muted-foreground flex flex-col items-center">
-            <Loader2 className="h-6 w-6 mb-3 opacity-50 animate-spin text-emerald-400" />
+            <PokeballLoader size={24} className="mb-3 opacity-60" />
             <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Fetching Items</p>
           </div>
         ) : (

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import type { TeamSlotState } from '../../data/mocks';
 import { generateHeuristics } from '../../lib/telemetry';
-import { Shield, Target, Wrench, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Shield, Target, Wrench, CheckCircle2, XCircle } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import { PokedexTooltip } from '../ui/PokedexTooltip';
 import { cn } from '../../lib/utils';
 import { TypeBadge } from '../ui/TypeBadge';
@@ -26,7 +27,7 @@ export function HeuristicInsights({ team }: HeuristicInsightsProps) {
   if (isLoading || !h) {
     return (
       <div className="mt-8 rounded-[2rem] border border-border bg-card p-12 flex flex-col items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-pd-accent mb-4" />
+        <PokeballLoader size={32} className="mb-4 opacity-80" />
         <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Compiling Math Matrix</p>
       </div>
     );

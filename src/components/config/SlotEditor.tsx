@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { pokemonQueries } from '../../queries/pokemonQueries';
-import { Shield, Sword, Zap, Loader2, ChevronDown } from 'lucide-react';
+import { Shield, Sword, Zap, ChevronDown } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import type { TeamSlotState, Move } from '../../data/mocks';
 import { StatPanel } from '../analysis/StatPanel';
 import { MoveSlotCard } from './MoveSlotCard';
@@ -241,7 +242,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                   )} />
                   <div className="relative flex items-center h-full w-full rounded-full bg-black/90 px-4 py-2 z-10 backdrop-blur-sm">
                     {active && formQuery.isLoading ? (
-                      <Loader2 className="w-3 h-3 animate-spin mx-2 text-primary" />
+                      <div className="mx-2 flex-shrink-0"><PokeballLoader size={12} className="opacity-80 grayscale" /></div>
                     ) : (
                       <span className={cn(
                           "text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] transition-colors drop-shadow-sm flex items-center",

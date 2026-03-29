@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, Loader2, Gamepad2 } from 'lucide-react';
+import { ChevronDown, Gamepad2 } from 'lucide-react';
+import { PokeballLoader } from './PokeballLoader';
 import { gameQueries } from '../../queries/gameQueries';
 import { cn } from '../../lib/utils';
 
@@ -52,7 +53,7 @@ export function GameSelector({ value, onChange }: GameSelectorProps) {
         </span>
         
         {isLoading ? (
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground ml-1" />
+          <div className="ml-1"><PokeballLoader size={14} className="opacity-70 grayscale" /></div>
         ) : (
           <ChevronDown className={cn("w-3.5 h-3.5 text-muted-foreground ml-1 transition-transform duration-200", isOpen && "rotate-180")} />
         )}

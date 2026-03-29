@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { PokeballLoader } from '../ui/PokeballLoader';
 import { useQueries } from '@tanstack/react-query';
 import { moveQueries } from '../../queries/moveQueries';
 import type { Move } from '../../data/mocks';
@@ -124,7 +125,7 @@ export function MovePalette({ onClose, onSelectMove, allowedMoves, level }: Move
       <div className="flex-1 overflow-y-auto p-1.5 custom-scrollbar bg-background/50">
         {isLoading ? (
           <div className="py-8 text-center text-muted-foreground flex flex-col items-center">
-            <Loader2 className="h-6 w-6 mb-3 opacity-50 animate-spin text-pd-accent" />
+            <PokeballLoader size={24} className="mb-3 opacity-60" />
             <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Fetching Data</p>
           </div>
         ) : filtered.length === 0 ? (
