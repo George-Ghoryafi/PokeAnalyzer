@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TeamBuilder } from './components/team/TeamBuilder';
 import { SlotEditor } from './components/config/SlotEditor';
 import { TeamCoverage } from './components/analysis/TeamCoverage';
@@ -29,8 +29,16 @@ function ThemeToggle() {
 }
 
 export default function App() {
-  const [team, setTeam] = useState<TeamSlotState[]>(
-    Array(6).fill(null).map(() => ({
+  const [team, setTeam] = useState<TeamSlotState[]>(() => {
+    const saved = localStorage.getItem('active_pokemon_team_state');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse cached team state', e);
+      }
+    }
+    return Array(6).fill(null).map(() => ({
       pokemon: null,
       level: 50,
       shiny: false,
@@ -41,15 +49,25 @@ export default function App() {
       ivs: createEmptyStats(31),
       moves: [null, null, null, null],
       teraType: null,
-    }))
-  );
+    }));
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('active_pokemon_team_state', JSON.stringify(team));
+  }, [team]);
   
   const [selectedSlotIndex, setSelectedSlotIndex] = useState<number>(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'config' | 'coverage'>('config');
   
   // High-level Game State Config
-  const [selectedGame, setSelectedGame] = useState<string>('national');
+  const [selectedGame, setSelectedGame] = useState<string>(() => {
+    return localStorage.getItem('active_pokemon_game_state') || 'national';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('active_pokemon_game_state', selectedGame);
+  }, [selectedGame]);
   const { data: allowedSpecies } = useQuery(gameQueries.allowedPokemon(selectedGame));
 
   const handleSelectPokemon = (pokemon: Pokemon) => {

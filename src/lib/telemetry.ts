@@ -90,15 +90,11 @@ export function generateHeuristics(team: TeamSlotState[], typeMatrix: MatchupMat
     allTypes.forEach(attackType => {
       let mult = 1;
       
-      if (slot.teraType) {
-        mult = typeMatrix[slot.teraType][attackType];
-      } else {
-        p.types.forEach(defType => {
-          // Fallback to 1.0 multiplier if PokeAPI hasn't returned type definition yet
-          const factor = typeMatrix[defType]?.[attackType];
-          mult *= (factor !== undefined ? factor : 1.0);
-        });
-      }
+      // Use core intrinsic types since only one Pokemon can Tera per match.
+      p.types.forEach(defType => {
+        const factor = typeMatrix[defType]?.[attackType];
+        mult *= (factor !== undefined ? factor : 1.0);
+      });
       
       // Meta Ability Immunities
       if (slot.ability?.name === 'Levitate' && attackType === 'ground') mult = 0;
@@ -114,7 +110,7 @@ export function generateHeuristics(team: TeamSlotState[], typeMatrix: MatchupMat
   });
 
   allTypes.forEach(t => {
-    if (typeWeaknessCount[t] >= 3) h.defense.stackedWeaknesses.push(t);
+    if (typeWeaknessCount[t] >= 2) h.defense.stackedWeaknesses.push(t);
     if (typeResistanceCount[t] === 0) h.defense.unresistedThreats.push(t);
   });
 

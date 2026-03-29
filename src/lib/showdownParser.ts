@@ -141,8 +141,19 @@ export async function importTeamFromShowdown(text: string): Promise<TeamSlotStat
       const pokemon = await getPokemonDetails(normalizedPokemonName);
       slotState.pokemon = pokemon;
     } catch (e) {
-      // Failed to load this pokemon, skip slot entirely
-      continue;
+      if (normalizedPokemonName.includes('-')) {
+        try {
+           const fallbackName = normalizedPokemonName.split('-')[0];
+           const pokemon = await getPokemonDetails(fallbackName);
+           slotState.pokemon = pokemon;
+        } catch(e2) {
+           continue; 
+        }
+      } else {
+        // Failed to load this pokemon, skip slot entirely
+        console.warn('Completely failed to load pokemon', normalizedPokemonName);
+        continue;
+      }
     }
 
     try {
@@ -203,8 +214,9 @@ export async function importTeamFromShowdown(text: string): Promise<TeamSlotStat
             slotState.ivs[statKey] = val;
           }
         }
-      } else if (line.startsWith('- ') && nextMoveIndex < 4) {
-        const moveNameStr = line.substring(2).trim().toLowerCase().replace(/ /g, '-');
+      } else if (line.length > 0 && nextMoveIndex < 4) {
+        // Assume anything not matching standard headers that isn't empty is a move line
+        const moveNameStr = line.replace(/^- /, '').trim().toLowerCase().replace(/ /g, '-');
         try {
           const move = await getMoveDetails(moveNameStr);
           slotState.moves[nextMoveIndex] = move;

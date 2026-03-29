@@ -48,7 +48,8 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
     
     // Who defends against this type?
     const defenders = activeSlots.map(slot => {
-      const types = slot.teraType ? [slot.teraType] : slot.pokemon!.types;
+      // Use core intrinsic types since only one Pokemon can Tera per match.
+      const types = slot.pokemon!.types;
       let mult = 1;
       // Multiply across ALL defender types to handle dual-typing correctly
       types.forEach(t => mult *= (typeMatrix[t]?.[attackType] ?? 1));
@@ -69,8 +70,8 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
     // Contextual Rules
     // Unmitigated Weakness: Somebody takes 2x or 4x, and nobody resists it (< 1).
     const isUnmitigatedWeakness = maxDamageTaken >= 2 && minDamageTaken >= 1;
-    // Stacked Weakness: 3+ members take super-effective damage — critical even if someone resists
-    const isStackedWeakness = weakCount >= 3;
+    // Stacked Weakness: 2+ members take super-effective damage
+    const isStackedWeakness = weakCount >= 2;
     // Mitigated Weakness: Somebody takes 2x or 4x, but somebody else resists it or is immune 
     const isMitigatedWeakness = maxDamageTaken >= 2 && minDamageTaken < 1 && !isStackedWeakness;
     
@@ -98,7 +99,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
   });
 
   // 2. Bucketing Insights
-  const criticalVulnerabilities = analysis.filter(t => t.isUnmitigatedWeakness || t.isStackedWeakness).sort((a,b) => b.weakCount - a.weakCount || b.maxDamageTaken - a.maxDamageTaken);
+  const criticalVulnerabilities = analysis.filter(t => t.isStackedWeakness).sort((a,b) => b.weakCount - a.weakCount || b.maxDamageTaken - a.maxDamageTaken);
   
   const coreDefenses = analysis.filter(t => t.isWalled || t.isHeavilyResisted).sort((a,b) => a.minDamageTaken - b.minDamageTaken);
   
@@ -128,7 +129,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
                 <h3 className="text-pd-accent font-black uppercase tracking-widest text-sm md:text-base flex items-center">
                   <AlertTriangle className="w-5 h-5 mr-2" /> Critical Vulnerabilities
                 </h3>
-                <PokedexTooltip content="Types that threaten your team with no safe switch-in. Includes unmitigated weaknesses (no member resists) and stacked weaknesses (3+ members hit for super-effective damage)." />
+                <PokedexTooltip content="Types that threaten multiple members of your team simultaneously. A defensive type is considered a critical vulnerability when 2 or more Pokémon take super-effective damage from it." />
               </div>
               
               <div className="space-y-4 w-full relative z-10">
@@ -146,7 +147,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
                     </div>
                  )) : (
                     <div className="flex items-center justify-center py-8 text-muted-foreground italic font-medium opacity-60 bg-background/50 border border-dashed border-border/50 rounded-2xl">
-                       <CheckCircle2 className="w-4 h-4 mr-2" /> No unmitigated massive weaknesses
+                       <CheckCircle2 className="w-4 h-4 mr-2" /> No critical stacked weaknesses
                     </div>
                  )}
               </div>

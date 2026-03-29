@@ -304,7 +304,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
           </div>
 
           <div className="relative z-[70] grid grid-cols-2 gap-3 md:gap-4">
-            <div className="rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg">
+            <div className={cn("rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg transition-all relative", isAbilityPaletteOpen ? "z-[100]" : "z-10")}>
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
                 <Zap className="w-3.5 h-3.5 mr-2 text-yellow-400" /> Ability
               </h3>
@@ -380,7 +380,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                 </div>
               )}
             </div>
-            <div className="rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg">
+            <div className={cn("rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg transition-all relative", isItemPaletteOpen ? "z-[100]" : "z-10")}>
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
                 <Shield className="w-3.5 h-3.5 mr-2 text-emerald-400" /> Item
               </h3>
