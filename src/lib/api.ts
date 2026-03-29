@@ -1,4 +1,4 @@
-import type { Pokemon, PokemonType, Move } from '../data/mocks';
+import type { Pokemon, PokemonType, Move, Item } from '../data/mocks';
 
 const BASE_URL = 'https://pokeapi.co/api/v2';
 
@@ -106,5 +106,59 @@ export const getMoveDetails = async (name: string, signal?: AbortSignal): Promis
     power: data.power,
     accuracy: data.accuracy,
     description: englishEntry ? englishEntry.flavor_text.replace(/\n|\f|\r/g, ' ') : '',
+  };
+};
+
+export interface ItemListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: {
+    name: string;
+    url: string;
+  }[];
+}
+
+export const getAllItems = async (signal?: AbortSignal): Promise<ItemListResponse> => {
+  const response = await fetch(`${BASE_URL}/item?limit=2500`, { signal });
+  if (!response.ok) throw new Error('Failed to fetch items list');
+  return response.json();
+};
+
+const generationToGames: Record<string, string[]> = {
+  'generation-i': ['red-blue', 'yellow'],
+  'generation-ii': ['gold-silver', 'crystal'],
+  'generation-iii': ['ruby-sapphire', 'emerald', 'firered-leafgreen', 'colosseum', 'xd'],
+  'generation-iv': ['diamond-pearl', 'platinum', 'heartgold-soulsilver'],
+  'generation-v': ['black-white', 'black-2-white-2'],
+  'generation-vi': ['x-y', 'omega-ruby-alpha-sapphire'],
+  'generation-vii': ['sun-moon', 'ultra-sun-ultra-moon', 'lets-go-pikachu-lets-go-eevee'],
+  'generation-viii': ['sword-shield', 'the-isle-of-armor', 'the-crown-tundra', 'brilliant-diamond-shining-pearl', 'legends-arceus'],
+  'generation-ix': ['scarlet-violet', 'the-teal-mask', 'the-indigo-disk']
+};
+
+export const getItemDetails = async (name: string, signal?: AbortSignal): Promise<Item> => {
+  const response = await fetch(`${BASE_URL}/item/${name.toLowerCase().replace(/ /g, '-')}`, { signal });
+  if (!response.ok) throw new Error(`Failed to fetch details for item ${name}`);
+  const data = await response.json();
+
+  const englishEntry = data.flavor_text_entries.find((f: any) => f.language.name === 'en');
+  
+  // PokeAPI's flavor texts are sparse (e.g., missing ORAS for old items).
+  // We union flavor_text games with game_indices (generation appearances) to guarantee accurate legality.
+  const flavorTextGames = data.flavor_text_entries
+    .filter((f: any) => f.language.name === 'en' && f.version_group?.name)
+    .map((f: any) => f.version_group.name);
+
+  const generationGames = (data.game_indices || []).flatMap(
+    (g: any) => generationToGames[g.generation?.name] || []
+  );
+  
+  return {
+    name: data.name.replace(/-/g, ' '),
+    description: englishEntry ? englishEntry.text.replace(/\n|\f|\r/g, ' ') : '',
+    spriteUrl: data.sprites?.default || '',
+    category: data.category?.name || 'unknown',
+    version_groups: Array.from(new Set<string>([...flavorTextGames, ...generationGames]))
   };
 };

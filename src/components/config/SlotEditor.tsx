@@ -3,6 +3,7 @@ import { Shield, Sword, Zap } from 'lucide-react';
 import type { TeamSlotState, Move } from '../../data/mocks';
 import { StatPanel } from '../analysis/StatPanel';
 import { MoveSlotCard } from './MoveSlotCard';
+import { ItemPalette } from './ItemPalette';
 import { PremiumSelect } from '../ui/PremiumSelect';
 import { NumberInput } from '../ui/NumberInput';
 import { TypeBadge } from '../ui/TypeBadge';
@@ -21,6 +22,7 @@ interface SlotEditorProps {
 
 export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
   const [activeMoveSlot, setActiveMoveSlot] = useState<number | null>(null);
+  const [isItemPaletteOpen, setItemPaletteOpen] = useState(false);
 
   const pokemon = slot.pokemon;
 
@@ -156,23 +158,35 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
                 <Shield className="w-3.5 h-3.5 mr-2 text-emerald-400" /> Item
               </h3>
-              <PremiumSelect 
-                value={slot.item?.name || ''}
-                onChange={(val) => {
-                  const item = val ? { name: val } : null;
-                  onChange({ ...slot, item });
-                }}
-                options={[
-                  { label: '- None -', value: '' },
-                  { label: 'Leftovers', value: 'leftovers' },
-                  { label: 'Choice Band', value: 'choiceband' },
-                  { label: 'Choice Specs', value: 'choicespecs' },
-                  { label: 'Choice Scarf', value: 'choicescarf' },
-                  { label: 'Focus Sash', value: 'focussash' }
-                ]}
-                placeholder="Select Item"
-                renderUpwards
-              />
+              
+              <div className="relative w-full">
+                <button
+                  onClick={() => setItemPaletteOpen(!isItemPaletteOpen)}
+                  className="w-full h-10 px-3 flex items-center justify-between rounded-lg bg-black/40 border border-border/50 text-xs font-bold hover:bg-black/60 hover:border-emerald-500/50 transition-all text-left group"
+                >
+                  <div className="flex items-center gap-2 truncate">
+                    {slot.item?.spriteUrl ? (
+                      <img src={slot.item.spriteUrl} alt={slot.item.name} className="w-6 h-6 object-contain rendering-pixelated drop-shadow-md pb-1" />
+                    ) : null}
+                    <span className={slot.item ? "text-emerald-400 capitalize" : "text-muted-foreground uppercase tracking-widest text-[10px]"}>
+                      {slot.item ? slot.item.name : '- None -'}
+                    </span>
+                  </div>
+                </button>
+
+                {isItemPaletteOpen && (
+                  <div className="absolute left-0 right-0 lg:-left-[100%] lg:right-auto lg:w-80 bottom-full mb-2 z-[100] bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden max-h-[350px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <ItemPalette 
+                      selectedGame={selectedGame}
+                      onSelectItem={(item) => {
+                        onChange({ ...slot, item });
+                        setItemPaletteOpen(false);
+                      }}
+                      onClose={() => setItemPaletteOpen(false)}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

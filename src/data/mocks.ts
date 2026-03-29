@@ -28,6 +28,10 @@ export interface Move {
 
 export interface Item {
   name: string;
+  description?: string;
+  spriteUrl?: string;
+  category?: string;
+  version_groups?: string[];
 }
 
 export interface Nature {
