@@ -34,6 +34,10 @@
   --color-type-dark: #705746;
   --color-type-steel: #B7B7CE;
   --color-type-fairy: #D685AD;
+  
+  --animate-spin-slow: spin 4s linear infinite;
+  --animate-mega-burst: megaBurst 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  --animate-mega-flash: megaFlash 0.6s ease-out forwards;
 }
 
 @layer base {
@@ -117,4 +121,24 @@
 @keyframes doorSlideDown {
   0% { transform: translateY(0); }
   100% { transform: translateY(100%); }
+}
+
+/* ========================= */
+/* Mega Evolution Aesthetics */
+/* ========================= */
+
+@keyframes megaBurst {
+  0% { transform: scale(0.6); opacity: 0; border-width: 0px; }
+  20% { opacity: 1; border-width: 16px; }
+  100% { transform: scale(2.5); opacity: 0; border-width: 0px; }
+}
+
+@keyframes megaFlash {
+  0% { filter: brightness(1) drop-shadow(0 0 0px rgba(255,255,255,0)); }
+  40% { filter: brightness(10) drop-shadow(0 0 40px rgba(255,255,255,1)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0px rgba(255,255,255,0)); }
+}
+
+@utility bg-mega-ring {
+  background-image: conic-gradient(from 0deg, #ff3333, #ffbb00, #33cc33, #00cccc, #3333ff, #cc00cc, #ff3333);
 }

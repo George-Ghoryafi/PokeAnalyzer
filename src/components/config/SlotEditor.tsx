@@ -1,12 +1,16 @@
-import { useState, useMemo } from 'react';
-import { Shield, Sword, Zap } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { pokemonQueries } from '../../queries/pokemonQueries';
+import { Shield, Sword, Zap, Loader2 } from 'lucide-react';
 import type { TeamSlotState, Move } from '../../data/mocks';
+import { MEGA_STONE_MAP } from '../../data/megaStones';
 import { StatPanel } from '../analysis/StatPanel';
 import { MoveSlotCard } from './MoveSlotCard';
 import { ItemPalette } from './ItemPalette';
 import { PremiumSelect } from '../ui/PremiumSelect';
 import { NumberInput } from '../ui/NumberInput';
 import { TypeBadge } from '../ui/TypeBadge';
+import { cn } from '../../lib/utils';
 
 export interface EnrichedMove {
   name: string;
@@ -61,40 +65,123 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
 
   if (!pokemon) return null;
 
+  const megaMapping = slot.item ? MEGA_STONE_MAP[slot.item.name] : null;
+  const canMegaEvolve = Boolean(megaMapping && megaMapping.base === pokemon?.name);
+  const [isMegaView, setIsMegaView] = useState(false);
+  const [isAnimatingMega, setIsAnimatingMega] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(true);
+
+  // Remove initial spin after load
+  useEffect(() => {
+    const t = setTimeout(() => setIsSpinning(false), 2000);
+    return () => clearTimeout(t);
+  }, [slot.item?.name]);
+
+  useEffect(() => {
+    if (!canMegaEvolve && isMegaView) {
+      setIsMegaView(false);
+      setIsAnimatingMega(false);
+    }
+  }, [canMegaEvolve, isMegaView]);
+
+  // Pre-fetch the mega form if stone is equipped for instant toggling
+  const megaQuery = useQuery({
+    ...pokemonQueries.detail(megaMapping?.mega || ''),
+    enabled: canMegaEvolve
+  });
+
+  const handleToggleMega = () => {
+    // Retrigger the ring spin
+    setIsSpinning(false);
+    requestAnimationFrame(() => requestAnimationFrame(() => setIsSpinning(true)));
+    setTimeout(() => setIsSpinning(false), 2000);
+
+    if (!isMegaView) {
+      if (isAnimatingMega) return; // Prevent spamming
+      setIsAnimatingMega(true);
+      setTimeout(() => setIsMegaView(true), 300); // Swap mid-flash
+      setTimeout(() => setIsAnimatingMega(false), 800); // Clean up classes
+    } else {
+      setIsMegaView(false);
+    }
+  };
+
+  const displayPokemon = (isMegaView && megaQuery.data ? megaQuery.data : pokemon) as typeof pokemon;
+
+  if (!displayPokemon) return null;
+
   return (
     <div className="h-full flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       
       {/* Header Profile */}
-      <div className="flex items-center space-x-4 md:space-x-6">
-        <div className="relative h-20 w-20 rounded-full bg-card shadow-inner border border-border/60 p-2">
-          <img 
-            src={pokemon.spriteUrl} 
-            alt={pokemon.name}
-            className="h-full w-full object-contain drop-shadow-xl"
-          />
-        </div>
-        <div>
-          <h1 className="text-3xl md:text-4xl font-black capitalize tracking-tight text-foreground flex items-center">
-            {pokemon.name}
-            {slot.shiny && <span className="ml-3 text-sm text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-md border border-yellow-400/20">✨ Shiny</span>}
-          </h1>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {pokemon.types.map(t => <TypeBadge key={t} type={t} />)}
+      <div className="flex items-start md:items-center justify-between w-full">
+        <div className="flex items-center space-x-4 md:space-x-6">
+          <div className="relative h-20 w-20 flex-shrink-0 z-20">
+            <div className="absolute inset-0 rounded-full bg-card shadow-inner border border-border/60" />
+            {isAnimatingMega && (
+              <div className="absolute inset-[-40%] rounded-full border-[10px] border-cyan-400 opacity-0 animate-mega-burst pointer-events-none mix-blend-screen" />
+            )}
+            <img 
+              src={displayPokemon.spriteUrl} 
+              alt={displayPokemon.name}
+              className={cn(
+                "absolute inset-2 w-[calc(100%-1rem)] h-[calc(100%-1rem)] object-contain drop-shadow-xl z-10 origin-center transition-all duration-300",
+                isAnimatingMega && "animate-mega-flash"
+              )}
+            />
           </div>
-          <div className="flex flex-wrap gap-3 mt-3 text-xs font-bold uppercase tracking-widest text-muted-foreground items-center">
-            <span className="flex items-center">
-              Level 
-              <NumberInput 
-                min={1} max={100} 
-                value={slot.level} 
-                onChange={(val) => onChange({ ...slot, level: val })}
-                className="ml-2 w-16 h-6 bg-card/50 border border-border/50 rounded-md text-xs focus-within:border-pd-accent/50 overflow-visible z-10"
-              />
-            </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-border" />
-            <span>#{String(pokemon.id).padStart(3, '0')}</span>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-black capitalize tracking-tight text-foreground flex items-center">
+              {displayPokemon.name.replace(/-/g, ' ')}
+              {slot.shiny && <span className="ml-3 text-sm text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-md border border-yellow-400/20">✨ Shiny</span>}
+            </h1>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {displayPokemon.types.map(t => <TypeBadge key={t} type={t} />)}
+            </div>
+            <div className="flex flex-wrap gap-3 mt-3 text-xs font-bold uppercase tracking-widest text-muted-foreground items-center">
+              <span className="flex items-center">
+                Level 
+                <NumberInput 
+                  min={1} max={100} 
+                  value={slot.level} 
+                  onChange={(val) => onChange({ ...slot, level: val })}
+                  className="ml-2 w-16 h-6 bg-card/50 border border-border/50 rounded-md text-xs focus-within:border-pd-accent/50 overflow-visible z-10"
+                />
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-border" />
+              <span>#{String(pokemon.id).padStart(3, '0')}</span>
+            </div>
           </div>
         </div>
+
+        {canMegaEvolve && (
+          <div className="flex-shrink-0 self-start md:self-center ml-4">
+            <button
+              onClick={handleToggleMega}
+              disabled={isAnimatingMega}
+              className="group relative overflow-hidden rounded-full p-[2px] transition-all hover:scale-[1.02] active:scale-95 border-none shadow-md"
+            >
+              <div className={cn(
+                "absolute inset-[-50%] bg-mega-ring transition-opacity", 
+                isSpinning && "animate-[spin_1.5s_cubic-bezier(0.1,0.7,0.1,1)]",
+                isMegaView ? "opacity-100" : "opacity-40 group-hover:opacity-80"
+              )} />
+              <div className="relative flex items-center h-full w-full rounded-full bg-black/90 px-4 py-2 z-10 backdrop-blur-sm">
+                {megaQuery.isLoading && !megaQuery.data ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-2 text-cyan-400" />
+                ) : (
+                  <span className={cn(
+                      "text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] transition-colors drop-shadow-sm flex items-center gap-2",
+                      isMegaView ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400" : "text-zinc-400 group-hover:text-zinc-200",
+                      isAnimatingMega && "opacity-50"
+                  )}>
+                    {isMegaView ? 'Mega Active' : 'Mega Form'}
+                  </span>
+                )}
+              </div>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
@@ -143,16 +230,26 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
                 <Zap className="w-3.5 h-3.5 mr-2 text-yellow-400" /> Ability
               </h3>
-              <PremiumSelect 
-                value={slot.ability?.name || ''}
-                onChange={(val) => {
-                  const ability = pokemon.abilities.find(a => a.name === val) || null;
-                  onChange({ ...slot, ability });
-                }}
-                options={pokemon.abilities.map(a => ({ label: a.name, value: a.name }))}
-                placeholder="Select Ability"
-                renderUpwards
-              />
+              {isMegaView ? (
+                <div className="relative w-full h-10 px-3 flex flex-col justify-center rounded-lg bg-black/60 border border-cyan-500/20 shadow-inner group overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-transparent blur-xl pointer-events-none mix-blend-screen" />
+                  <div className="relative z-10 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-400/80 mb-0.5">Mega Ability</div>
+                  <div className="relative z-10 text-xs font-black text-white capitalize truncate drop-shadow-sm">
+                    {displayPokemon.abilities[0]?.name || 'Unknown'}
+                  </div>
+                </div>
+              ) : (
+                <PremiumSelect 
+                  value={slot.ability?.name || ''}
+                  onChange={(val) => {
+                    const ability = pokemon.abilities.find(a => a.name === val) || null;
+                    onChange({ ...slot, ability });
+                  }}
+                  options={pokemon.abilities.map(a => ({ label: a.name, value: a.name }))}
+                  placeholder="Select Ability"
+                  renderUpwards
+                />
+              )}
             </div>
             <div className="rounded-2xl border border-border/50 bg-card/30 p-4 shadow-sm backdrop-blur-lg">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center">
@@ -193,7 +290,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
 
         {/* Right Column: EVs/IVs & Stats */}
         <div className="lg:col-span-7">
-          <StatPanel slot={slot} onChange={onChange} />
+          <StatPanel slot={{...slot, pokemon: displayPokemon}} onChange={onChange} />
         </div>
       </div>
     </div>
