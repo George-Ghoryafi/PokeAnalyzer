@@ -1,6 +1,10 @@
+import { useState, useRef, useEffect } from 'react';
 import type { BaseStats, TeamSlotState } from '../../data/mocks';
 import { calculateHP, calculateStat, getNatureModifier } from '../../lib/pokemonMath';
 import { NumberInput } from '../ui/NumberInput';
+import { ChevronDown } from 'lucide-react';
+import { NATURES, STAT_SHORT_NAMES } from '../../data/natures';
+import { cn } from '../../lib/utils';
 
 interface StatPanelProps {
   slot: TeamSlotState;
@@ -8,6 +12,21 @@ interface StatPanelProps {
 }
 
 export function StatPanel({ slot, onChange }: StatPanelProps) {
+  const [isNatureOpen, setIsNatureOpen] = useState(false);
+  const natureRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (natureRef.current && !natureRef.current.contains(event.target as Node)) {
+        setIsNatureOpen(false);
+      }
+    }
+    if (isNatureOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isNatureOpen]);
+
   const { pokemon, evs, ivs, nature, level } = slot;
   
   if (!pokemon) return null;
@@ -34,11 +53,48 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
             EVs: <span className={totalEvs > 510 ? "text-pd-accent" : "text-pd-accent"}>{totalEvs}</span> / 510
           </span>
         </div>
-        {nature && (
-          <div className="px-3 py-1 bg-background/50 rounded-lg border border-border/50 text-xs font-bold capitalize text-muted-foreground shadow-inner">
-            {nature.name} Nature
-          </div>
-        )}
+        <div className="relative" ref={natureRef}>
+          <button 
+            onClick={() => setIsNatureOpen(!isNatureOpen)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg border text-xs font-bold tracking-tight transition-colors shadow-inner flex items-center gap-2",
+              nature 
+                ? "bg-pd-accent/10 border-pd-accent/30 text-pd-accent" 
+                : "bg-background/50 border-border/50 text-muted-foreground hover:bg-background/80 hover:text-foreground"
+            )}
+          >
+            {nature ? `${nature.name} Nature` : "Neutral Nature"}
+            <ChevronDown className={cn("w-3 h-3 transition-transform", isNatureOpen && "rotate-180")} />
+          </button>
+          
+          {isNatureOpen && (
+            <div className="absolute right-0 top-full mt-2 w-56 max-h-64 overflow-y-auto bg-card border border-border/50 rounded-xl shadow-xl z-50 flex flex-col p-1 backdrop-blur-xl">
+              <button 
+                className={cn("text-left px-3 py-2 rounded-lg text-xs font-bold hover:bg-background/80 transition-colors", !nature ? "bg-pd-accent/10 text-pd-accent" : "text-foreground")}
+                onClick={() => { onChange({ ...slot, nature: null }); setIsNatureOpen(false); }}
+              >
+                Neutral (None)
+              </button>
+              {NATURES.filter(n => n.increasedStat && n.decreasedStat).map(nat => (
+                <button
+                  key={nat.name}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded-lg flex items-center justify-between text-xs font-bold transition-colors mt-0.5",
+                    nature?.name === nat.name ? "bg-pd-accent/20 text-pd-accent border border-pd-accent/30" : "hover:bg-background/80 text-foreground border border-transparent"
+                  )}
+                  onClick={() => { onChange({ ...slot, nature: nat }); setIsNatureOpen(false); }}
+                >
+                  <span>{nat.name}</span>
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-black">
+                    <span className="text-pd-accent">+{STAT_SHORT_NAMES[nat.increasedStat!]}</span>
+                    <span className="opacity-50">/</span>
+                    <span className="text-blue-400">-{STAT_SHORT_NAMES[nat.decreasedStat!]}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex items-center text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground mb-3 px-2">
         <div className="w-10">Stat</div>
@@ -66,15 +122,26 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
           const percentage = Math.min(100, Math.max(0, (finalTotal / 500) * 100)); // cap visually
           
           let natureColor = "text-muted-foreground";
-          if (nature?.increasedStat === key) natureColor = "text-pd-accent";
-          if (nature?.decreasedStat === key) natureColor = "text-pd-accent";
+          let natureIndicator = "";
+          let valueColor = "text-foreground";
+          
+          if (nature?.increasedStat === key) {
+            natureColor = "text-pd-accent";
+            natureIndicator = " ▲";
+            valueColor = "text-pd-accent";
+          }
+          if (nature?.decreasedStat === key) {
+            natureColor = "text-blue-400";
+            natureIndicator = " ▼";
+            valueColor = "text-blue-400";
+          }
           
           return (
             <div key={key} className="flex items-center text-sm group">
               <div className={`w-10 font-black tracking-wider transition-colors uppercase text-[10px] ${natureColor}`}>
-                {label}
+                {label}{natureIndicator}
               </div>
-              <div className="w-8 text-right font-black text-foreground tabular-nums opacity-50 px-1">{baseValue}</div>
+              <div className={`w-8 text-right font-black tabular-nums opacity-60 px-1 ${valueColor}`}>{baseValue}</div>
               
               <div className="w-14 ml-2">
                 <NumberInput 
@@ -94,7 +161,7 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
                 />
               </div>
 
-              <div className="w-12 ml-4 text-right font-black text-foreground tabular-nums text-base">{finalTotal}</div>
+              <div className={`w-12 ml-4 text-right font-black tabular-nums text-base ${valueColor}`}>{finalTotal}</div>
               
               <div className="ml-5 flex-1 overflow-hidden rounded-full bg-background/50 p-0.5 border border-border/30 shadow-inner">
                 <div

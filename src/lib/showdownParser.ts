@@ -1,6 +1,7 @@
 import type { TeamSlotState, BaseStats, PokemonType } from '../data/mocks';
 import { createEmptyStats } from '../data/mocks';
 import { getPokemonDetails, getMoveDetails, getItemDetails } from './api';
+import { NATURES } from '../data/natures';
 
 const STAT_KEYS: (keyof BaseStats)[] = ['hp', 'attack', 'defense', 'specialAttack', 'specialDefense', 'speed'];
 
@@ -188,10 +189,13 @@ export async function importTeamFromShowdown(text: string): Promise<TeamSlotStat
       } else if (line.startsWith('Tera Type:')) {
         slotState.teraType = line.split(':')[1].trim().toLowerCase() as PokemonType;
       } else if (line.endsWith('Nature')) {
-        const natureNameStr = line.replace('Nature', '').trim().toLowerCase();
-        // Since we don't have a giant hardcoded nature list exported in api, we construct a dummy one,
-        // unless we augment a nature map. We leave it as a synthetic record.
-        slotState.nature = { name: natureNameStr, increasedStat: null, decreasedStat: null }; 
+        const natureNameStr = line.replace('Nature', '').trim();
+        const foundNat = NATURES.find(n => n.name.toLowerCase() === natureNameStr.toLowerCase());
+        if (foundNat) {
+          slotState.nature = foundNat;
+        } else {
+          slotState.nature = { name: capitalizeWords(natureNameStr), increasedStat: null, decreasedStat: null }; 
+        }
       } else if (line.startsWith('EVs:')) {
         const evString = line.split(':')[1].trim();
         const evChunks = evString.split('/');

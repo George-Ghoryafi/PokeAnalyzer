@@ -11,6 +11,7 @@ import { NumberInput } from '../ui/NumberInput';
 import { TypeBadge } from '../ui/TypeBadge';
 import { cn, computeEffectiveTypes } from '../../lib/utils';
 
+
 export interface EnrichedMove {
   name: string;
   levelLearned: number;
@@ -218,10 +219,11 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               <span className="flex items-center">
                 Level 
                 <NumberInput 
-                  min={1} max={100} 
                   value={slot.level} 
-                  onChange={(val) => onChange({ ...slot, level: val })}
-                  className="ml-2 w-16 h-6 bg-card/50 border border-border/50 rounded-md text-xs focus-within:border-pd-accent/50 overflow-visible z-10"
+                  min={1} 
+                  max={100} 
+                  onChange={l => onChange({ ...slot, level: l })} 
+                  className="w-16 ml-2 bg-background border border-border/50 text-foreground font-black py-1 px-2 rounded-lg"
                 />
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-border" />
