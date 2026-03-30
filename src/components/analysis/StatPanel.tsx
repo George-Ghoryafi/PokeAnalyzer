@@ -145,10 +145,14 @@ export function StatPanel({ slot, onChange }: StatPanelProps) {
               
               <div className="w-14 ml-2">
                 <NumberInput 
-                  min={0} max={252} step={4}
+                  min={0} max={Math.min(252, 510 - (totalEvs - evValue))} step={4}
                   className="w-full h-6 bg-background/50 focus-within:bg-background border border-border/50 focus-within:border-pd-accent/50 rounded-lg text-xs shadow-inner transition-all overflow-visible"
                   value={evValue}
-                  onChange={(val) => onChange({ ...slot, evs: { ...evs, [key]: val } })}
+                  onChange={(val) => {
+                    const remaining = 510 - (totalEvs - evValue);
+                    const clampedVal = Math.min(val, remaining);
+                    onChange({ ...slot, evs: { ...evs, [key]: clampedVal } });
+                  }}
                 />
               </div>
 
