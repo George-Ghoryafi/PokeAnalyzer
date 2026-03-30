@@ -1,8 +1,8 @@
 import { ShieldAlert, Shield, AlertTriangle, Crosshair, XCircle, CheckCircle2 } from 'lucide-react';
 import { PokeballLoader } from '../ui/PokeballLoader';
 import { PokedexTooltip } from '../ui/PokedexTooltip';
+import { cn, computeEffectiveTypes } from '../../lib/utils';
 import type { TeamSlotState, PokemonType, Move } from '../../data/mocks';
-import { cn } from '../../lib/utils';
 import { TypeBadge } from '../ui/TypeBadge';
 import { HeuristicInsights } from './HeuristicInsights';
 import { ExpertAnalyst } from './ExpertAnalyst';
@@ -49,7 +49,7 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
     // Who defends against this type?
     const defenders = activeSlots.map(slot => {
       // Use core intrinsic types since only one Pokemon can Tera per match.
-      const types = slot.pokemon!.types;
+      const types = computeEffectiveTypes(slot);
       let mult = 1;
       // Multiply across ALL defender types to handle dual-typing correctly
       types.forEach(t => mult *= (typeMatrix[t]?.[attackType] ?? 1));

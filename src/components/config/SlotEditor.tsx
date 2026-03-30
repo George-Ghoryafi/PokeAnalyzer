@@ -9,7 +9,7 @@ import { MoveSlotCard } from './MoveSlotCard';
 import { ItemPalette } from './ItemPalette';
 import { NumberInput } from '../ui/NumberInput';
 import { TypeBadge } from '../ui/TypeBadge';
-import { cn } from '../../lib/utils';
+import { cn, computeEffectiveTypes } from '../../lib/utils';
 
 export interface EnrichedMove {
   name: string;
@@ -76,7 +76,15 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
     // Sort logic to prefer mega and gmax heavily
     return speciesData.varieties
       .map((v: any) => v.pokemon.name as string)
-      .filter((n: string) => n !== pokemon.name && !n.includes('totem') && !n.includes('-cap') && !n.includes('starter') && n !== 'greninja-battle-bond')
+      .filter((n: string) => {
+        if (n.startsWith('koraidon-') && n.endsWith('-build')) return false;
+        if (n.startsWith('miraidon-') && n.endsWith('-mode')) return false;
+
+        const permanentForms = ['lycanroc', 'shellos', 'gastrodon', 'vivillon', 'flabebe', 'floette', 'florges', 'pumpkaboo', 'gourgeist', 'basculin', 'toxtricity', 'sinistea', 'polteageist', 'alcremie', 'urshifu', 'dudunsparce', 'maushold', 'tatsugiri', 'squawkabilly', 'wormadam', 'magearna'];
+        if (permanentForms.some(p => n.startsWith(p + '-'))) return false;
+
+        return n !== pokemon.name && !n.includes('totem') && !n.includes('-cap') && !n.includes('starter') && n !== 'greninja-battle-bond';
+      })
       .sort((a, b) => {
         if (a.includes('mega') && !b.includes('mega')) return -1;
         if (!a.includes('mega') && b.includes('mega')) return 1;
@@ -111,6 +119,10 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
       return slot.ability?.name.toLowerCase().replace(/ /g, '-') === 'battle-bond';
     }
 
+    if (formName === 'rayquaza-mega') {
+      return slot.moves.some(m => m?.name.toLowerCase() === 'dragon ascent');
+    }
+
     if (formName.includes('mega') || formName.includes('primal')) {
       if (!slot.item) return false;
       const itemName = slot.item.name.toLowerCase();
@@ -131,6 +143,14 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
     if (formName.includes('gmax')) {
       const gmaxGames = ['sword-shield', 'the-isle-of-armor', 'the-crown-tundra', 'national'];
       return gmaxGames.includes(selectedGame);
+    }
+
+    if (formName === 'zacian-crowned') {
+      return slot.item?.name.toLowerCase() === 'rusted sword';
+    }
+
+    if (formName === 'zamazenta-crowned') {
+      return slot.item?.name.toLowerCase() === 'rusted shield';
     }
 
     return true; // Others default to unlocked
@@ -192,7 +212,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               {slot.shiny && <span className="ml-3 text-sm text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-md border border-yellow-400/20">✨ Shiny</span>}
             </h1>
             <div className="flex flex-wrap gap-2 mt-2">
-              {displayPokemon.types.map(t => <TypeBadge key={t} type={t} />)}
+              {computeEffectiveTypes({...slot, pokemon: displayPokemon}).map(t => <TypeBadge key={t} type={t} />)}
             </div>
             <div className="flex flex-wrap gap-3 mt-3 text-xs font-bold uppercase tracking-widest text-muted-foreground items-center">
               <span className="flex items-center">

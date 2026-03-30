@@ -1,5 +1,6 @@
 import type { TeamSlotState, PokemonType } from '../data/mocks';
 import type { MatchupMatrix } from '../queries/typeQueries';
+import { computeEffectiveTypes } from './utils';
 
 /**
  * Compresses the current team state into a highly dense telemetry string
@@ -21,7 +22,7 @@ export function compileTeamTelemetry(team: TeamSlotState[]): string {
     return {
       slot: index + 1,
       species: p.name,
-      types: p.types,
+      types: computeEffectiveTypes(slot),
       item: slot.item?.name || 'none',
       ability: slot.ability?.name || 'none',
       level: slot.level,
@@ -86,12 +87,11 @@ export function generateHeuristics(team: TeamSlotState[], typeMatrix: MatchupMat
 
   // Calculate Resistances & Weaknesses
   activeMembers.forEach(slot => {
-    const p = slot.pokemon!;
     allTypes.forEach(attackType => {
       let mult = 1;
       
-      // Use core intrinsic types since only one Pokemon can Tera per match.
-      p.types.forEach(defType => {
+      // Use core intrinsic types (accounting for Arceus/Silvally items)
+      computeEffectiveTypes(slot).forEach(defType => {
         const factor = typeMatrix[defType]?.[attackType];
         mult *= (factor !== undefined ? factor : 1.0);
       });

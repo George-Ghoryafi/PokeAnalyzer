@@ -78,10 +78,16 @@ export default function App() {
     setTeam((prev) => {
       const newTeam = [...prev];
       newTeam[selectedSlotIndex] = {
-        ...newTeam[selectedSlotIndex],
         pokemon,
+        level: 50,
+        shiny: false,
         ability: pokemon.abilities[0] || null,
-        teraType: null, // Default to native types; user can explicitly Tera-crystallize later
+        item: null,
+        nature: null,
+        evs: createEmptyStats(0),
+        ivs: createEmptyStats(31),
+        moves: [null, null, null, null],
+        teraType: null,
       };
       return newTeam;
     });
