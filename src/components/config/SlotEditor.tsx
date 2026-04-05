@@ -264,7 +264,11 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                          <TeraTypePalette 
                            currentType={slot.teraType}
                            onSelectType={t => { 
-                             onChange({...slot, teraType: t }); 
+                             onChange({
+                               ...slot, 
+                               teraType: t,
+                               ...(t === null ? { isTerastallized: false } : {})
+                             }); 
                              setTeraPaletteOpen(false); 
                            }}
                          />
