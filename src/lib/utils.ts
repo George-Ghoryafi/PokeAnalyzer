@@ -49,7 +49,7 @@ export function computeEffectiveTypes(slot: import('../data/mocks').TeamSlotStat
 }
 
 export function getEffectiveMoveType(slot: import('../data/mocks').TeamSlotState, move: import('../data/mocks').Move): import('../data/mocks').PokemonType {
-  if (slot.isTerastallized && slot.teraType && move.name === 'Tera Blast') {
+  if (slot.isTerastallized && slot.teraType && move.name.toLowerCase().replace(/-/g, ' ') === 'tera blast') {
     return slot.teraType;
   }
   return move.type;

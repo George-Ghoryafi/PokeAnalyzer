@@ -16,8 +16,21 @@ export function useAllTypeMatchups() {
   return useQuery({
     queryKey: ['type-matchups-matrix'],
     queryFn: async (): Promise<MatchupMatrix> => {
-      // Parallelize 18 fetches since PokeAPI resolves them in ~50ms
-      const promises = TYPES.map(t => fetch(`https://pokeapi.co/api/v2/type/${t}`).then(res => res.json()));
+      // Parallelize fetches, but isolate failures so missing types (like stellar) fallback gracefully
+      const promises = TYPES.map(t => fetch(`https://pokeapi.co/api/v2/type/${t}`).then(res => {
+        if (!res.ok) throw new Error(`Failed to fetch type ${t}: HTTP ${res.status}`);
+        return res.json();
+      }).catch(err => {
+        console.warn(`Failed to fetch PokeAPI matrix for ${t}, defaulting to unresisted 1.0x relations.`);
+        return {
+          name: t,
+          damage_relations: {
+            double_damage_from: [],
+            half_damage_from: [],
+            no_damage_from: []
+          }
+        };
+      }));
       const typeData = await Promise.all(promises);
 
       // Initialize an empty 18x18 matrix defaulted to 1.0 multiplier
