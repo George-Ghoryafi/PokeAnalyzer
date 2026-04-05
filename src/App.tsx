@@ -49,6 +49,7 @@ export default function App() {
       ivs: createEmptyStats(31),
       moves: [null, null, null, null],
       teraType: null,
+      isTerastallized: false,
     }));
   });
   
@@ -88,6 +89,7 @@ export default function App() {
         ivs: createEmptyStats(31),
         moves: [null, null, null, null],
         teraType: null,
+        isTerastallized: false,
       };
       return newTeam;
     });
@@ -107,6 +109,7 @@ export default function App() {
         ivs: createEmptyStats(31),
         moves: [null, null, null, null],
         teraType: null,
+        isTerastallized: false,
       };
       return newTeam;
     });

@@ -37,3 +37,27 @@ export function getNatureModifier(statKey: keyof BaseStats, nature: Nature | nul
   if (nature.decreasedStat === statKey && nature.increasedStat !== statKey) return 0.9;
   return 1.0;
 }
+
+/**
+ * Derives the STAB multiplier for a given move, accounting for Terastallization.
+ */
+export function getStabMultiplier(
+  slot: import('../data/mocks').TeamSlotState, 
+  moveType: import('../data/mocks').PokemonType
+): number {
+  if (!slot.pokemon) return 1.0;
+  
+  if (slot.isTerastallized && slot.teraType) {
+    if (moveType === slot.teraType) {
+      if (slot.pokemon.types.includes(slot.teraType)) {
+        return 2.0; // Double STAB
+      }
+      return 1.5; // New STAB
+    }
+    // Still keep original STAB when Terastallized
+    if (slot.pokemon.types.includes(moveType)) return 1.5;
+    return 1.0;
+  }
+
+  return slot.pokemon.types.includes(moveType) ? 1.5 : 1.0;
+}

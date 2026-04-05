@@ -34,6 +34,10 @@ const ITEM_TYPE_MAP: Record<string, import('../data/mocks').PokemonType> = {
 export function computeEffectiveTypes(slot: import('../data/mocks').TeamSlotState): import('../data/mocks').PokemonType[] {
   if (!slot.pokemon) return [];
   
+  if (slot.isTerastallized && slot.teraType) {
+    return [slot.teraType];
+  }
+  
   if (slot.pokemon.name === 'arceus' || slot.pokemon.name === 'silvally') {
     if (slot.item) {
       const override = ITEM_TYPE_MAP[slot.item.name.toLowerCase()];
@@ -42,4 +46,26 @@ export function computeEffectiveTypes(slot: import('../data/mocks').TeamSlotStat
   }
   
   return slot.pokemon.types;
+}
+
+export function getEffectiveMoveType(slot: import('../data/mocks').TeamSlotState, move: import('../data/mocks').Move): import('../data/mocks').PokemonType {
+  if (slot.isTerastallized && slot.teraType && move.name.toLowerCase().replace(/-/g, ' ') === 'tera blast') {
+    return slot.teraType;
+  }
+  return move.type;
+}
+
+export const TYPE_TO_ID: Record<import('../data/mocks').PokemonType, number> = {
+  normal: 1, fighting: 2, flying: 3, poison: 4, ground: 5, rock: 6, bug: 7, ghost: 8, steel: 9, 
+  fire: 10, water: 11, grass: 12, electric: 13, psychic: 14, ice: 15, dragon: 16, dark: 17, fairy: 18, stellar: 19
+};
+
+export function getTypeIconUrl(type: import('../data/mocks').PokemonType): string {
+  const id = TYPE_TO_ID[type];
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${id}.png`;
+}
+
+export function getSimpleTypeIconUrl(type: import('../data/mocks').PokemonType): string {
+  if (type === 'stellar') return 'STELLAR';
+  return `https://raw.githubusercontent.com/partywhale/pokemon-type-icons/main/icons/${type}.svg`;
 }
