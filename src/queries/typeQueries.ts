@@ -20,7 +20,7 @@ export function useAllTypeMatchups() {
       const promises = TYPES.map(t => fetch(`https://pokeapi.co/api/v2/type/${t}`).then(res => {
         if (!res.ok) throw new Error(`Failed to fetch type ${t}: HTTP ${res.status}`);
         return res.json();
-      }).catch(err => {
+      }).catch(() => {
         console.warn(`Failed to fetch PokeAPI matrix for ${t}, defaulting to unresisted 1.0x relations.`);
         return {
           name: t,
