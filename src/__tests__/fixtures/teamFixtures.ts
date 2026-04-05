@@ -29,6 +29,7 @@ export function createMockSlot(overrides: Partial<TeamSlotState> = {}): TeamSlot
     ivs: createEmptyStats(31),
     moves: [null, null, null, null],
     teraType: null,
+    isTerastallized: false,
     ...overrides,
   };
 }

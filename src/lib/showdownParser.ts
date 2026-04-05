@@ -104,6 +104,7 @@ export async function importTeamFromShowdown(text: string): Promise<TeamSlotStat
     ivs: createEmptyStats(31),
     moves: [null, null, null, null],
     teraType: null,
+    isTerastallized: false,
   }));
 
   for (let i = 0; i < Math.min(teamBlocks.length, 6); i++) {
