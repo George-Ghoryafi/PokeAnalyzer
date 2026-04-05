@@ -1,15 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { pokemonQueries } from '../../queries/pokemonQueries';
-import { Shield, Sword, Zap, ChevronDown } from 'lucide-react';
+import { Shield, Sword, Zap, ChevronDown, Sparkles } from 'lucide-react';
 import { PokeballLoader } from '../ui/PokeballLoader';
 import type { TeamSlotState, Move } from '../../data/mocks';
 import { StatPanel } from '../analysis/StatPanel';
 import { MoveSlotCard } from './MoveSlotCard';
 import { ItemPalette } from './ItemPalette';
+import { TeraTypePalette } from './TeraTypePalette';
 import { NumberInput } from '../ui/NumberInput';
 import { TypeBadge } from '../ui/TypeBadge';
-import { cn, computeEffectiveTypes } from '../../lib/utils';
+import { cn, computeEffectiveTypes, getSimpleTypeIconUrl } from '../../lib/utils';
 
 
 export interface EnrichedMove {
@@ -28,8 +29,10 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
   const [activeMoveSlot, setActiveMoveSlot] = useState<number | null>(null);
   const [isItemPaletteOpen, setItemPaletteOpen] = useState(false);
   const [isAbilityPaletteOpen, setAbilityPaletteOpen] = useState(false);
+  const [isTeraPaletteOpen, setTeraPaletteOpen] = useState(false);
 
   const pokemon = slot.pokemon;
+  const isTeraAllowed = selectedGame === 'scarlet-violet' || selectedGame === 'national';
 
   const validMoves = useMemo<EnrichedMove[]>(() => {
     if (!pokemon?.rawMoves) return [];
@@ -212,8 +215,64 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               {displayPokemon.name.replace(/-/g, ' ')}
               {slot.shiny && <span className="ml-3 text-sm text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-md border border-yellow-400/20">✨ Shiny</span>}
             </h1>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {computeEffectiveTypes({...slot, pokemon: displayPokemon}).map(t => <TypeBadge key={t} type={t} />)}
+            <div className="flex flex-wrap gap-2 mt-2 items-center relative">
+              {computeEffectiveTypes({...slot, pokemon: displayPokemon}).map(t => <TypeBadge key={t} type={t} className={cn(slot.isTerastallized && "ring-2 ring-cyan-400 ring-offset-2 ring-offset-background")} />)}
+              {slot.isTerastallized && <span className="text-[10px] uppercase font-black tracking-widest text-cyan-400 ml-2 animate-pulse flex items-center pr-2 border-r border-border/50"><Sparkles className="w-3 h-3 mr-1" /> Tera</span>}
+              
+              {isTeraAllowed && (() => {
+                const isGimmickFormActive = selectedFormName?.includes('mega') || selectedFormName?.includes('gmax') || selectedFormName?.includes('primal');
+                return (
+                  <div className="relative ml-2 flex items-center bg-card border border-border rounded-full shadow-sm hover:border-cyan-500/50 transition-colors h-8">
+                     <button
+                       onClick={() => {
+                          if (isGimmickFormActive) return;
+                          onChange({...slot, isTerastallized: !slot.isTerastallized, teraType: slot.teraType || displayPokemon.types[0] });
+                       }}
+                       disabled={isGimmickFormActive}
+                       className={cn(
+                         "flex items-center justify-center h-full px-2 rounded-l-full transition-all border-r border-border hover:bg-white/5",
+                         slot.isTerastallized ? "bg-cyan-500/20" : "",
+                         isGimmickFormActive ? "opacity-50 grayscale cursor-not-allowed" : ""
+                       )}
+                       title={isGimmickFormActive ? "Cannot Terastallize a Mega or G-Max Pokemon" : slot.isTerastallized ? "Deactivate Terastallization" : "Activate Terastallization"}
+                     >
+                       {slot.teraType ? (
+                         getSimpleTypeIconUrl(slot.teraType) === 'STELLAR' ? (
+                            <Sparkles className={cn("w-4 h-4", slot.isTerastallized ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" : "text-muted-foreground")} />
+                         ) : (
+                            <img src={getSimpleTypeIconUrl(slot.teraType)} alt="Tera" className={cn("w-4 h-4 object-contain", slot.isTerastallized ? "drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" : (!slot.isTerastallized && !isGimmickFormActive ? "opacity-40 grayscale" : ""))} />
+                         )
+                       ) : (
+                         <Sparkles className="w-4 h-4 text-muted-foreground opacity-40 hover:opacity-100 transition-opacity" />
+                       )}
+                     </button>
+                     
+                     <button
+                       onClick={() => {
+                          setTeraPaletteOpen(!isTeraPaletteOpen);
+                          setAbilityPaletteOpen(false);
+                          setItemPaletteOpen(false);
+                       }}
+                       className="flex items-center justify-center h-full px-1.5 pr-2 rounded-r-full hover:bg-white/10 transition-colors"
+                       title="Change Tera Type"
+                     >
+                       <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                     </button>
+
+                     {isTeraPaletteOpen && (
+                       <div className="absolute top-full left-0 mt-3 z-[100] w-72 md:w-80 animate-in fade-in slide-in-from-top-2 duration-200">
+                         <TeraTypePalette 
+                           currentType={slot.teraType}
+                           onSelectType={t => { 
+                             onChange({...slot, teraType: t }); 
+                             setTeraPaletteOpen(false); 
+                           }}
+                         />
+                       </div>
+                     )}
+                  </div>
+                );
+              })()}
             </div>
             <div className="flex flex-wrap gap-3 mt-3 text-xs font-bold uppercase tracking-widest text-muted-foreground items-center">
               <span className="flex items-center">
@@ -238,6 +297,9 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               const isMega = formName.includes('mega') || formName.includes('primal');
               const isGmax = formName.includes('gmax');
               const active = selectedFormName === formName;
+              
+              // Prevent mega/gmax if terastallized
+              const formDisabled = (isAnimating && !active) || (slot.isTerastallized && (isMega || isGmax));
 
               let label = 'Form';
               if (formName.includes('mega-x')) label = 'Mega X';
@@ -251,10 +313,13 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
               return (
                 <button
                   key={formName}
-                  onClick={() => handleToggleForm(formName)}
-                  disabled={isAnimating && !active}
-                  title={`Toggle ${label}`}
-                  className="group relative overflow-hidden rounded-full p-[2px] transition-all border-none shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer"
+                  onClick={() => {
+                    if (formDisabled) return;
+                    handleToggleForm(formName);
+                  }}
+                  disabled={formDisabled}
+                  title={slot.isTerastallized && (isMega || isGmax) ? "Cannot mix Tera with Mega/G-Max" : `Toggle ${label}`}
+                  className={cn("group relative overflow-hidden rounded-full p-[2px] transition-all border-none shadow-md cursor-pointer", formDisabled ? "opacity-50 grayscale cursor-not-allowed" : "hover:scale-[1.02] active:scale-95")}
                 >
                   <div className={cn(
                     "absolute inset-[-50%] transition-opacity", 
@@ -352,11 +417,11 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                       isAbilityPaletteOpen ? "border-cyan-500/50" : "border-border/50 hover:bg-black/60 hover:border-cyan-500/30"
                     )}
                   >
-                    <span className={slot.ability ? "text-cyan-400 font-bold capitalize truncate" : "text-muted-foreground uppercase tracking-widest text-[10px] font-bold"}>
+                    <span className={slot.ability ? "text-cyan-400 text-sm font-bold capitalize truncate" : "text-muted-foreground uppercase tracking-widest text-[10px] font-bold"}>
                       {slot.ability ? slot.ability.name : '- Select Ability -'}
                     </span>
                     <ChevronDown 
-                      className="w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 group-hover:text-cyan-400" 
+                      className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-cyan-400" 
                       style={{ transform: isAbilityPaletteOpen ? 'rotate(180deg)' : 'none' }} 
                     />
                   </button>
@@ -372,7 +437,7 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                               setAbilityPaletteOpen(false);
                             }}
                             className={cn(
-                              "w-full flex w-full flex-col text-left px-3 py-2.5 rounded-xl transition-all border",
+                              "w-full flex flex-col text-left px-3 py-2.5 rounded-xl transition-all border",
                               slot.ability?.name === a.name 
                                 ? "bg-cyan-500/10 border-cyan-500/30" 
                                 : "bg-transparent border-transparent hover:bg-white/5 hover:border-white/10"
@@ -413,16 +478,23 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                     setItemPaletteOpen(!isItemPaletteOpen);
                     setAbilityPaletteOpen(false);
                   }}
-                  className="w-full h-10 px-3 flex items-center justify-between rounded-lg bg-black/40 border border-border/50 text-xs font-bold hover:bg-black/60 hover:border-emerald-500/50 transition-all text-left group"
+                  className={cn(
+                    "w-full h-10 px-3 flex items-center justify-between rounded-lg bg-black/40 border transition-all text-left group",
+                    isItemPaletteOpen ? "border-emerald-500/50" : "border-border/50 hover:bg-black/60 hover:border-emerald-500/30"
+                  )}
                 >
                   <div className="flex items-center gap-2 truncate">
                     {slot.item?.spriteUrl ? (
                       <img src={slot.item.spriteUrl} alt={slot.item.name} className="w-6 h-6 object-contain rendering-pixelated drop-shadow-md pb-1" />
                     ) : null}
-                    <span className={slot.item ? "text-emerald-400 capitalize" : "text-muted-foreground uppercase tracking-widest text-[10px]"}>
+                    <span className={slot.item ? "text-emerald-400 text-sm font-bold capitalize truncate" : "text-muted-foreground uppercase tracking-widest text-[10px] font-bold"}>
                       {slot.item ? slot.item.name : '- None -'}
                     </span>
                   </div>
+                  <ChevronDown 
+                    className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground transition-transform duration-200 group-hover:text-emerald-400" 
+                    style={{ transform: isItemPaletteOpen ? 'rotate(180deg)' : 'none' }} 
+                  />
                 </button>
 
                 {isItemPaletteOpen && (
@@ -439,6 +511,9 @@ export function SlotEditor({ slot, onChange, selectedGame }: SlotEditorProps) {
                 )}
               </div>
             </div>
+            
+
+            
           </div>
         </div>
 

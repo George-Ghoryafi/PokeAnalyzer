@@ -8,7 +8,8 @@
  */
 import type { TeamSlotState, PokemonType, Move, Pokemon } from '../data/mocks';
 import type { MatchupMatrix } from '../queries/typeQueries';
-import { computeEffectiveTypes } from './utils';
+import { computeEffectiveTypes, getEffectiveMoveType } from './utils';
+import { getStabMultiplier } from './pokemonMath';
 
 export interface DefenderResult {
   pokemon: Pokemon;
@@ -17,7 +18,7 @@ export interface DefenderResult {
 
 export interface AttackerResult {
   pokemon: Pokemon;
-  moves: Move[];
+  moves: (Move & { effectiveType: PokemonType; stab: number })[];
 }
 
 export interface TypeAnalysis {
@@ -63,9 +64,14 @@ export function analyzeCoverage(team: TeamSlotState[], typeMatrix: MatchupMatrix
 
     // Who can attack this type for Super Effective damage? (Status moves excluded)
     const attackers = activeSlots.flatMap(slot => {
-      const seMoves = slot.moves.filter(
-        m => m && m.category !== 'status' && (typeMatrix[attackType]?.[m.type] ?? 1) > 1
-      ) as Move[];
+      const seMoves = slot.moves.filter(m => m !== null && m.category !== 'status').map(m => {
+        const move = m as Move;
+        const eType = getEffectiveMoveType(slot, move);
+        const stabMod = getStabMultiplier(slot, eType);
+        return { ...move, effectiveType: eType, stab: stabMod };
+      }).filter(m => {
+        return (typeMatrix[attackType]?.[m.effectiveType] ?? 1) > 1;
+      });
       if (seMoves.length > 0) return [{ pokemon: slot.pokemon!, moves: seMoves }];
       return [];
     });

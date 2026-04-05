@@ -1,7 +1,7 @@
 export type PokemonType = 
   | 'normal' | 'fire' | 'water' | 'electric' | 'grass' | 'ice' 
   | 'fighting' | 'poison' | 'ground' | 'flying' | 'psychic' | 'bug' 
-  | 'rock' | 'ghost' | 'dragon' | 'dark' | 'steel' | 'fairy';
+  | 'rock' | 'ghost' | 'dragon' | 'dark' | 'steel' | 'fairy' | 'stellar';
 
 export interface BaseStats {
   hp: number;
@@ -70,6 +70,7 @@ export interface TeamSlotState {
   ivs: BaseStats;
   moves: (Move | null)[]; // tuple of length 4
   teraType: PokemonType | null;
+  isTerastallized: boolean;
 }
 
 // Helper to create an empty stat spread
@@ -86,6 +87,7 @@ export const MOCK_MOVES: Record<string, Move> = {
   airslash: { name: 'Air Slash', type: 'flying', category: 'special', power: 75, accuracy: 95 },
   bulletpunch: { name: 'Bullet Punch', type: 'steel', category: 'physical', power: 40, accuracy: 100 },
   moonblast: { name: 'Moonblast', type: 'fairy', category: 'special', power: 95, accuracy: 100 },
+  terablast: { name: 'Tera Blast', type: 'normal', category: 'special', power: 80, accuracy: 100 },
 };
 
 export const MOCK_ABILITIES: Record<string, Ability> = {
@@ -194,5 +196,6 @@ export const MOCK_TYPE_WEAKNESSES: Record<PokemonType, Record<string, number>> =
   psychic: { fighting: 0.5, psychic: 0.5, bug: 2, ghost: 2, dark: 2 },
   rock: { normal: 0.5, fire: 0.5, water: 2, grass: 2, fighting: 2, poison: 0.5, ground: 2, flying: 0.5, steel: 2 },
   ice: { fire: 2, water: 1, ice: 0.5, fighting: 2, rock: 2, steel: 2 },
-  dark: { fighting: 2, psychic: 0, bug: 2, ghost: 0.5, dark: 0.5, fairy: 2 }
+  dark: { fighting: 2, psychic: 0, bug: 2, ghost: 0.5, dark: 0.5, fairy: 2 },
+  stellar: {}
 };

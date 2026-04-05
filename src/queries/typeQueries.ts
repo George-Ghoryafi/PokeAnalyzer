@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 const TYPES = [
   'normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel',
-  'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark', 'fairy'
+  'fire', 'water', 'grass', 'electric', 'psychic', 'ice', 'dragon', 'dark', 'fairy', 'stellar'
 ] as const;
 
 export type MatchupMatrix = Record<string, Record<string, number>>;

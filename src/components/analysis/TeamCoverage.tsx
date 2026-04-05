@@ -1,7 +1,8 @@
 import { ShieldAlert, Shield, AlertTriangle, Crosshair, XCircle, CheckCircle2 } from 'lucide-react';
 import { PokeballLoader } from '../ui/PokeballLoader';
 import { PokedexTooltip } from '../ui/PokedexTooltip';
-import { cn, computeEffectiveTypes } from '../../lib/utils';
+import { cn, computeEffectiveTypes, getEffectiveMoveType } from '../../lib/utils';
+import { getStabMultiplier } from '../../lib/pokemonMath';
 import type { TeamSlotState, PokemonType, Move } from '../../data/mocks';
 import { TypeBadge } from '../ui/TypeBadge';
 import { HeuristicInsights } from './HeuristicInsights';
@@ -58,7 +59,13 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
 
     // Who can attack this type for Super Effective damage? (Status moves excluded — they deal no damage)
     const attackers = activeSlots.flatMap(slot => {
-       const seMoves = slot.moves.filter(m => m && m.category !== 'status' && (typeMatrix[attackType]?.[m.type] ?? 1) > 1) as Move[];
+       const seMoves = slot.moves.filter(m => m && m.category !== 'status').map(m => {
+           const move = m as Move;
+           const eType = getEffectiveMoveType(slot, move);
+           const stab = getStabMultiplier(slot, eType);
+           return { ...move, effectiveType: eType, stab };
+       }).filter(m => (typeMatrix[attackType]?.[m.effectiveType] ?? 1) > 1);
+
        if (seMoves.length > 0) return [{ pokemon: slot.pokemon!, moves: seMoves }];
        return [];
     });
@@ -229,7 +236,9 @@ export function TeamCoverage({ team }: TeamCoverageProps) {
                                 <img src={atk.pokemon.spriteUrl} className="w-5 h-5 object-contain scale-125" />
                                 <div className="flex flex-col">
                                   {atk.moves.map(m => (
-                                     <span key={m.name} className="text-[9px] font-bold uppercase text-foreground leading-tight whitespace-nowrap">{m.name}</span>
+                                     <span key={m.name} className={cn("text-[9px] font-bold uppercase leading-tight whitespace-nowrap", m.stab > 1.5 ? "text-pd-accent drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]" : "text-foreground")}>
+                                        {m.name} {m.stab > 1.5 && "★"}
+                                     </span>
                                   ))}
                                 </div>
                              </div>

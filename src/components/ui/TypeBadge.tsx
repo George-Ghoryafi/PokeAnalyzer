@@ -25,10 +25,15 @@ const typeConfig: Record<PokemonType, { bg: string; text: string }> = {
   dark: { bg: 'bg-[#705746]', text: 'text-white' },
   steel: { bg: 'bg-[#B7B7CE]', text: 'text-gray-900' },
   fairy: { bg: 'bg-[#D685AD]', text: 'text-gray-900' },
+  stellar: { bg: 'bg-gradient-to-r from-cyan-400 via-indigo-400 to-fuchsia-400', text: 'text-white' },
 };
 
 export function TypeBadge({ type, className }: TypeBadgeProps) {
-  const config = typeConfig[type];
+  const config = typeConfig[type] || { bg: 'bg-gray-500', text: 'text-white' };
+
+  if (!typeConfig[type]) {
+    console.warn(`TypeBadge encountered missing or invalid type:`, type);
+  }
 
   return (
     <span
@@ -39,7 +44,7 @@ export function TypeBadge({ type, className }: TypeBadgeProps) {
         className
       )}
     >
-      {type}
+      {type || '???'}
     </span>
   );
 }
